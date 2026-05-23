@@ -1,0 +1,43 @@
+.sortable-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.sortable-row {
+  display: flex;
+  align-items: stretch;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  transition: box-shadow var(--duration-fast) var(--ease-out);
+}
+.sortable-row:hover {
+  border-color: var(--ctp-surface2);
+}
+.sortable-row.dragging {
+  box-shadow: var(--shadow-lg), 0 0 0 2px rgba(138, 173, 244, 0.3);
+  border-color: var(--ctp-blue);
+  border-radius: var(--radius-md);
+}
+.sortable-handle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 8px;
+  color: var(--ctp-overlay0);
+  cursor: grab;
+  flex-shrink: 0;
+  border-right: 1px solid var(--border-subtle);
+  transition: color var(--duration-fast) var(--ease-out);
+}
+.sortable-handle:hover {
+  color: var(--ctp-blue);
+}
+.sortable-handle:active {
+  cursor: grabbing;
+}
+.sortable-content {
+  flex: 1;
+  padding: 10px 14px;
+  min-width: 0;
+}
