@@ -107,7 +107,6 @@ export type ApiGlobalConfig = {
   socials: ApiSocialLink[]
 }
 
-/* ─── Collection Items ─── */
 export type ApiArtwork = {
   _id: string
   title: string
@@ -150,7 +149,6 @@ export type ApiTosSection = {
   updatedAt: string
 }
 
-/* ─── Aggregated Portfolio ─── */
 export type ApiPortfolioData = ApiGlobalConfig & {
   artworks: ApiArtwork[]
   commissionTiers: ApiCommissionTier[]
@@ -158,7 +156,6 @@ export type ApiPortfolioData = ApiGlobalConfig & {
   tosSections: ApiTosSection[]
 }
 
-/* ─── Sort Request ─── */
 export type SortItem = {
   id: string
   sortOrder: number

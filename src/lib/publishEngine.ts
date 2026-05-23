@@ -6,7 +6,6 @@ import type {
   SortItem,
 } from '../types/api'
 
-
 type MutationOp =
   | { type: 'upload'; localUrl: string; file: File }
   | { type: 'delete'; collection: CollectionKey; id: string }

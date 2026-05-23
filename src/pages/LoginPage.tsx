@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
 import './LoginPage.css'
 
-/* ─── Star types for variety ─── */
 type Star = {
   x: number
   y: number
@@ -47,7 +46,6 @@ function StarField() {
     canvas.style.height = h + 'px'
     ctx.scale(dpr, dpr)
 
-    /* Generate stars */
     const density = Math.max(80, Math.floor((w * h) / 4000))
     const stars: Star[] = []
     const hues: Star['hue'][] = ['blue', 'pink', 'white', 'lavender']
@@ -66,7 +64,6 @@ function StarField() {
       })
     }
 
-    /* Shooting stars */
     const shootingStars: ShootingStar[] = []
 
     function spawnShootingStar() {
@@ -83,7 +80,6 @@ function StarField() {
       })
     }
 
-    /* Color map */
     function starColor(hue: Star['hue'], alpha: number): string {
       switch (hue) {
         case 'blue':
@@ -97,7 +93,6 @@ function StarField() {
       }
     }
 
-    /* Draw a 4-point cross star */
     function drawCross(cx: number, cy: number, size: number, color: string) {
       ctx.fillStyle = color
       ctx.strokeStyle = color
@@ -110,13 +105,12 @@ function StarField() {
       ctx.moveTo(cx - size * 1.8, cy)
       ctx.lineTo(cx + size * 1.8, cy)
       ctx.stroke()
-      /* Center glow */
+      
       ctx.beginPath()
       ctx.arc(cx, cy, size * 0.6, 0, Math.PI * 2)
       ctx.fill()
     }
 
-    /* Draw a starburst (6 spikes) */
     function drawBurst(cx: number, cy: number, size: number, color: string, frame: number) {
       const spikes = 6
       const outerR = size * 2.5
@@ -145,13 +139,11 @@ function StarField() {
       frame++
       shootTimer++
 
-      /* Spawn shooting star occasionally */
       if (shootTimer > 180 + Math.random() * 300) {
         spawnShootingStar()
         shootTimer = 0
       }
 
-      /* Draw stars */
       for (const star of stars) {
         const twinkle = star.baseAlpha + (1 - star.baseAlpha) *
           (0.5 + 0.5 * Math.sin(frame * star.twinkleSpeed + star.twinkleOffset))
@@ -163,7 +155,7 @@ function StarField() {
         } else if (star.type === 'burst') {
           drawBurst(star.x, star.y, star.size, color, frame)
         } else {
-          /* Simple glowing dot */
+          
           const gradient = ctx.createRadialGradient(
             star.x, star.y, 0,
             star.x, star.y, star.size * 2.5
@@ -178,7 +170,6 @@ function StarField() {
         }
       }
 
-      /* Draw shooting stars */
       for (let i = shootingStars.length - 1; i >= 0; i--) {
         const s = shootingStars[i]
         s.x += s.vx
@@ -207,7 +198,6 @@ function StarField() {
         ctx.lineTo(s.x, s.y)
         ctx.stroke()
 
-        /* Head glow */
         const headGlow = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, 4)
         headGlow.addColorStop(0, `rgba(255, 255, 255, ${s.alpha * 0.8})`)
         headGlow.addColorStop(1, `rgba(138, 173, 244, 0)`)
@@ -237,7 +227,6 @@ function StarField() {
   return <canvas ref={canvasRef} className="star-canvas" />
 }
 
-/* ─── Floating Cloud SVGs ─── */
 function CloudLayer() {
   return (
     <div className="cloud-layer" aria-hidden="true">
@@ -295,7 +284,7 @@ export function LoginPage() {
       <StarField />
       <CloudLayer />
 
-      {/* Horizon glow */}
+      {}
       <div className="horizon-glow" />
 
       <div className="login-card">

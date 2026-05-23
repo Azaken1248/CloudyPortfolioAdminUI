@@ -31,7 +31,6 @@ export function DashboardLayout() {
 
   const fetchLiveState = useDraftStore((s) => s.fetchLiveState)
 
-  /* Fetch live state on mount */
   useEffect(() => {
     fetchLiveState()
   }, [fetchLiveState])
@@ -40,7 +39,7 @@ export function DashboardLayout() {
 
   return (
     <div className="dashboard">
-      {/* Mobile overlay */}
+      {}
       {sidebarOpen && (
         <div
           className="sidebar-overlay"
@@ -59,7 +58,7 @@ export function DashboardLayout() {
       </div>
 
       <div className="dashboard-main">
-        {/* Mobile topbar */}
+        {}
         <div className="mobile-topbar">
           <button
             className="mobile-menu-btn"

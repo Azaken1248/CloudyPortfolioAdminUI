@@ -1,4 +1,4 @@
-/* ─── Login Page ─── */
+
 .login-page {
   min-height: 100vh;
   min-height: 100dvh;
@@ -9,8 +9,6 @@
   position: relative;
   overflow: hidden;
 }
-
-/* ─── Star Canvas ─── */
 .star-canvas {
   position: absolute;
   inset: 0;
@@ -19,8 +17,6 @@
   pointer-events: none;
   z-index: 0;
 }
-
-/* ─── Horizon Glow ─── */
 .horizon-glow {
   position: absolute;
   bottom: -40%;
@@ -38,13 +34,10 @@
   pointer-events: none;
   animation: horizonPulse 8s ease-in-out infinite alternate;
 }
-
 @keyframes horizonPulse {
   0% { opacity: 0.6; }
   100% { opacity: 1; }
 }
-
-/* ─── Floating Clouds ─── */
 .cloud-layer {
   position: absolute;
   inset: 0;
@@ -52,20 +45,17 @@
   pointer-events: none;
   overflow: hidden;
 }
-
 .floating-cloud {
   position: absolute;
   color: rgba(91, 96, 120, 0.08);
   filter: blur(2px);
   will-change: transform;
 }
-
 .cloud-1 {
   top: 12%;
   left: -8%;
   animation: cloudDrift1 45s linear infinite;
 }
-
 .cloud-2 {
   top: 55%;
   left: -12%;
@@ -73,14 +63,12 @@
   animation: cloudDrift2 60s linear infinite;
   animation-delay: -20s;
 }
-
 .cloud-3 {
   top: 25%;
   right: -6%;
   animation: cloudDrift3 50s linear infinite;
   animation-delay: -10s;
 }
-
 .cloud-4 {
   bottom: 18%;
   left: -10%;
@@ -88,36 +76,30 @@
   animation: cloudDrift1 55s linear infinite;
   animation-delay: -30s;
 }
-
 .cloud-5 {
   top: 70%;
   right: -8%;
   animation: cloudDrift3 40s linear infinite;
   animation-delay: -5s;
 }
-
 @keyframes cloudDrift1 {
   0%   { transform: translateX(-10%) translateY(0); }
   50%  { transform: translateX(110vw) translateY(-20px); }
   50.01% { transform: translateX(-10%) translateY(10px); }
   100% { transform: translateX(-10%) translateY(0); }
 }
-
 @keyframes cloudDrift2 {
   0%   { transform: translateX(-10%) translateY(0) scale(1.1); }
   50%  { transform: translateX(110vw) translateY(15px) scale(1.1); }
   50.01% { transform: translateX(-10%) translateY(-10px) scale(1.1); }
   100% { transform: translateX(-10%) translateY(0) scale(1.1); }
 }
-
 @keyframes cloudDrift3 {
   0%   { transform: translateX(110vw) translateY(0); }
   50%  { transform: translateX(-10%) translateY(10px); }
   50.01% { transform: translateX(110vw) translateY(-15px); }
   100% { transform: translateX(110vw) translateY(0); }
 }
-
-/* ─── Login Card ─── */
 .login-card {
   background: rgba(36, 39, 58, 0.55);
   backdrop-filter: blur(24px) saturate(1.2);
@@ -136,7 +118,6 @@
     inset 0 1px 0 rgba(202, 211, 245, 0.06);
   animation: cardAppear 0.8s var(--ease-out) both;
 }
-
 @keyframes cardAppear {
   0% {
     opacity: 0;
@@ -149,15 +130,12 @@
     filter: blur(0);
   }
 }
-
-/* ─── Logo ─── */
 .login-logo {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
 }
-
 .login-logo-icon {
   width: 60px;
   height: 60px;
@@ -172,7 +150,6 @@
   position: relative;
   animation: iconFloat 4s ease-in-out infinite;
 }
-
 .login-logo-icon::after {
   content: '';
   position: absolute;
@@ -184,17 +161,14 @@
   opacity: 0.6;
   animation: iconGlow 4s ease-in-out infinite alternate;
 }
-
 @keyframes iconFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-4px); }
 }
-
 @keyframes iconGlow {
   0% { opacity: 0.4; }
   100% { opacity: 0.8; }
 }
-
 .login-title {
   font-size: 1.6rem;
   font-weight: 700;
@@ -204,15 +178,12 @@
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-
 .login-subtitle {
   font-size: 0.88rem;
   color: var(--text-muted);
   font-weight: 400;
   letter-spacing: 0.02em;
 }
-
-/* ─── Divider ─── */
 .login-divider {
   height: 1px;
   background: linear-gradient(
@@ -225,21 +196,16 @@
   );
   margin: 24px 0;
 }
-
-/* ─── Body ─── */
 .login-body {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
-
 .login-description {
   font-size: 0.88rem;
   color: var(--text-secondary);
   line-height: 1.6;
 }
-
-/* ─── Discord Button ─── */
 .login-discord-btn {
   display: flex;
   align-items: center;
@@ -259,7 +225,6 @@
   position: relative;
   overflow: hidden;
 }
-
 .login-discord-btn::before {
   content: '';
   position: absolute;
@@ -268,7 +233,6 @@
   transform: translateX(-100%);
   transition: transform 0.5s ease;
 }
-
 .login-discord-btn:hover {
   background: linear-gradient(135deg, #6672F5, #5865F2);
   box-shadow:
@@ -276,31 +240,23 @@
     0 0 40px rgba(88, 101, 242, 0.15);
   transform: translateY(-2px);
 }
-
 .login-discord-btn:hover::before {
   transform: translateX(100%);
 }
-
 .login-discord-btn:active {
   transform: translateY(0);
 }
-
-/* ─── Footer ─── */
 .login-footer {
   font-size: 0.75rem;
   color: var(--ctp-overlay0);
   margin-top: 20px;
 }
-
-/* ─── Loading ─── */
 .login-loading {
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 2;
 }
-
-/* ─── Shared loading styles ─── */
 .loading-screen {
   min-height: 100vh;
   display: flex;
@@ -310,7 +266,6 @@
   gap: 16px;
   background: var(--bg-app);
 }
-
 .loading-spinner {
   width: 28px;
   height: 28px;
@@ -319,52 +274,41 @@
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
 }
-
 .loading-text {
   font-size: 0.88rem;
   color: var(--text-muted);
 }
-
-/* ─── Mobile Responsive ─── */
 @media (max-width: 480px) {
   .login-card {
     padding: 32px 24px 24px;
     border-radius: 16px;
   }
-
   .login-logo-icon {
     width: 52px;
     height: 52px;
   }
-
   .login-title {
     font-size: 1.35rem;
   }
-
   .login-discord-btn {
     padding: 12px 20px;
     font-size: 0.9rem;
   }
-
   .floating-cloud {
     filter: blur(3px);
     opacity: 0.6;
   }
 }
-
 @media (max-height: 600px) {
   .login-card {
     padding: 24px 24px 20px;
   }
-
   .login-divider {
     margin: 16px 0;
   }
-
   .login-logo {
     gap: 4px;
   }
-
   .login-logo-icon {
     width: 44px;
     height: 44px;

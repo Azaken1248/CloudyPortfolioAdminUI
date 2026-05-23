@@ -14,7 +14,6 @@ const PREVIEW_SCRIPT = `<script>
   var lastHash='';
   var pendingResolvers=[];
 
-  /* Suppress Vite HMR errors in iframe */
   window.$RefreshReg$=window.$RefreshReg$||function(){};
   window.$RefreshSig$=window.$RefreshSig$||function(){return function(t){return t}};
 
@@ -25,14 +24,13 @@ const PREVIEW_SCRIPT = `<script>
     );
   }
 
-  /* Patch fetch — NEVER hits real API */
   window.fetch=function(input,init){
     var u=typeof input==='string'?input:(input instanceof Request?input.url:'');
     if(u.indexOf(API)!==-1 && (!init || !init.method || init.method==='GET')){
       if(draftData){
         return Promise.resolve(makeDraftResponse(draftData));
       }
-      /* No draft yet — queue and wait for postMessage to deliver data */
+      
       return new Promise(function(resolve){
         pendingResolvers.push(resolve);
       });
@@ -47,14 +45,12 @@ const PREVIEW_SCRIPT = `<script>
     }
   }
 
-  /* Tell the parent we're ready to receive draft data */
   function signalReady(){
     if(window.parent && window.parent!==window){
       window.parent.postMessage({type:'CLOUDY_PREVIEW_READY'},'*');
     }
   }
 
-  /* Keep pinging until we get data (every 500ms, max 20 attempts) */
   var readyAttempts=0;
   var readyInterval=setInterval(function(){
     if(draftData||readyAttempts>20){clearInterval(readyInterval);return;}
@@ -63,7 +59,6 @@ const PREVIEW_SCRIPT = `<script>
   },500);
   signalReady();
 
-  /* Listen for draft updates from the Admin UI */
   window.addEventListener('message',function(e){
     if(!e.data||typeof e.data!=='object')return;
 
@@ -86,17 +81,16 @@ const PREVIEW_SCRIPT = `<script>
     clearInterval(readyInterval);
 
     if(isFirstData){
-      /* First data arrival — resolve any queued fetch() calls */
+      
       flushPending();
     } else {
-      /* Subsequent update — reload so portfolio re-fetches */
+      
       window.location.reload();
     }
   });
 
 })();
 </script>`
-
 
 function portfolioPreviewPlugin(): Plugin {
   return {
