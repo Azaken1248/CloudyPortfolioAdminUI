@@ -47,6 +47,39 @@ function stripMeta<T extends Record<string, unknown>>(obj: T): Record<string, un
   return rest
 }
 
+function replaceLocalUrlInValue<T>(value: T, localUrl: string, cdnUrl: string): T {
+  if (typeof value === 'string') {
+    return (value === localUrl ? cdnUrl : value) as T
+  }
+
+  if (Array.isArray(value)) {
+    return value.map((item) => replaceLocalUrlInValue(item, localUrl, cdnUrl)) as T
+  }
+
+  if (value && typeof value === 'object') {
+    const updated: Record<string, unknown> = {}
+    for (const [key, entry] of Object.entries(value as Record<string, unknown>)) {
+      updated[key] = replaceLocalUrlInValue(entry, localUrl, cdnUrl)
+    }
+    return updated as T
+  }
+
+  return value
+}
+
+function rewriteOperationUrls(op: MutationOp, localUrl: string, cdnUrl: string): MutationOp {
+  switch (op.type) {
+    case 'create':
+      return { ...op, payload: replaceLocalUrlInValue(op.payload, localUrl, cdnUrl) }
+    case 'update':
+      return { ...op, payload: replaceLocalUrlInValue(op.payload, localUrl, cdnUrl) }
+    case 'config':
+      return { ...op, payload: replaceLocalUrlInValue(op.payload, localUrl, cdnUrl) }
+    default:
+      return op
+  }
+}
+
 function isDraftId(id: string): boolean {
   return id.startsWith('draft_')
 }
@@ -218,6 +251,10 @@ export async function executePublishPlan(plan: PublishPlan): Promise<void> {
       case 'upload': {
         const cdnUrl = await apiUpload(op.file)
         store.replacePendingUrl(op.localUrl, cdnUrl)
+
+        for (let j = i + 1; j < ops.length; j++) {
+          ops[j] = rewriteOperationUrls(ops[j], op.localUrl, cdnUrl)
+        }
         break
       }
 
@@ -239,7 +276,7 @@ export async function executePublishPlan(plan: PublishPlan): Promise<void> {
       case 'update': {
         const endpoint = COLLECTION_ENDPOINTS[op.collection]
         await apiFetch(`${endpoint}/${op.id}`, {
-          method: 'PUT',
+          method: 'PATCH',
           body: JSON.stringify(op.payload),
         })
         break
@@ -256,7 +293,7 @@ export async function executePublishPlan(plan: PublishPlan): Promise<void> {
 
       case 'config': {
         await apiFetch('/config', {
-          method: 'PUT',
+          method: 'PATCH',
           body: JSON.stringify(op.payload),
         })
         break

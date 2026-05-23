@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Shield, FloppyDisk, Plus, PencilSimple, Trash, CloudArrowUp } from '@phosphor-icons/react'
+import { ShieldIcon, FloppyDiskIcon, PlusIcon, PencilSimpleIcon, TrashIcon, CloudArrowUpIcon } from '@phosphor-icons/react'
 import { EditorCard } from '../components/EditorCard'
 import { TextInput, SelectInput } from '../components/FormField'
 import { ActionButton } from '../components/ActionButton'
@@ -93,7 +93,7 @@ export function TosEditor() {
         <p className="editor-subtitle">Manage TOS sections and rules</p>
       </div>
 
-      <EditorCard title={`Sections (${items.length})`} description="Drag to reorder" icon={<Shield size={18} />}>
+      <EditorCard title={`Sections (${items.length})`} description="Drag to reorder" icon={<ShieldIcon size={18} />}>
         <SortableList
           items={items.map((s) => ({ ...s, id: s._id }))}
           onReorder={handleReorder}
@@ -110,17 +110,17 @@ export function TosEditor() {
                 </div>
                 <div className="list-item-actions">
                   <button className="list-item-btn" onClick={() => startEdit(section)} type="button">
-                    <PencilSimple size={14} /> Edit
+                    <PencilSimpleIcon size={14} /> Edit
                   </button>
                   <button className="list-item-btn list-item-btn-danger" onClick={() => setDeleteId(section._id)} type="button">
-                    <Trash size={14} />
+                    <TrashIcon size={14} />
                   </button>
                 </div>
               </div>
             )
           }}
         />
-        <ActionButton variant="ghost" size="sm" icon={<Plus size={14} />} onClick={() => { setEditingId(null); setForm(emptyForm); setShowForm(true) }}>
+        <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => { setEditingId(null); setForm(emptyForm); setShowForm(true) }}>
           Add Section
         </ActionButton>
       </EditorCard>
@@ -154,18 +154,18 @@ export function TosEditor() {
                     onClick={() => setForm({ ...form, points: form.points.filter((_, j) => j !== i) })}
                     type="button"
                   >
-                    <Trash size={14} />
+                    <TrashIcon size={14} />
                   </button>
                 </div>
               ))}
-              <ActionButton variant="ghost" size="sm" icon={<Plus size={14} />} onClick={() => setForm({ ...form, points: [...form.points, ''] })}>
+              <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setForm({ ...form, points: [...form.points, ''] })}>
                 Add Point
               </ActionButton>
             </div>
           </div>
           <div className="modal-form-actions">
             <ActionButton variant="ghost" onClick={() => { setShowForm(false); setEditingId(null) }}>Cancel</ActionButton>
-            <ActionButton variant="primary" icon={<FloppyDisk size={14} />} onClick={handleSaveTos}>
+            <ActionButton variant="primary" icon={<FloppyDiskIcon size={14} />} onClick={handleSaveTos}>
               {editingId ? 'Update' : 'Add'}
             </ActionButton>
           </div>
@@ -177,10 +177,10 @@ export function TosEditor() {
           <span className="draft-pill-dot" />
           Draft — preview only
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUp size={14} />} loading={isPublishing} onClick={() => publishSection('tosSections')}>
+        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('tosSections')}>
           Publish TOS Only
         </ActionButton>
-        <ActionButton variant="primary" icon={<FloppyDisk size={16} />} loading={isPublishing} onClick={publish}>
+        <ActionButton variant="primary" icon={<FloppyDiskIcon size={16} />} loading={isPublishing} onClick={publish}>
           Publish All
         </ActionButton>
       </div>

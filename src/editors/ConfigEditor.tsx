@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Gear, FloppyDisk, Plus, Trash, CloudArrowUp } from '@phosphor-icons/react'
+import { GearIcon, FloppyDiskIcon, PlusIcon, TrashIcon, CloudArrowUpIcon } from '@phosphor-icons/react'
 import { EditorCard } from '../components/EditorCard'
 import { TextInput, TextAreaInput } from '../components/FormField'
 import { ActionButton } from '../components/ActionButton'
@@ -88,7 +88,7 @@ export function ConfigEditor() {
         <p className="editor-subtitle">General settings, navigation, and social links</p>
       </div>
 
-      <EditorCard title="Branding" description="Core site identity" icon={<Gear size={18} />}>
+      <EditorCard title="Branding" description="Core site identity" icon={<GearIcon size={18} />}>
         <div className="field-grid-2">
           <TextInput label="Site Name" value={siteName} onChange={setSiteName} placeholder="Cluwudy" diff={diff.field('siteConfig.siteName', siteName)} />
           <TextInput label="Subtitle" value={siteSubtitle} onChange={setSiteSubtitle} placeholder="portfolio" diff={diff.field('siteConfig.siteSubtitle', siteSubtitle)} />
@@ -114,7 +114,7 @@ export function ConfigEditor() {
                   <span className={`diff-badge diff-badge-${diff.field(`nav.${i}`, item)}`}>{diff.field(`nav.${i}`, item)}</span>
                 )}
                 <button className="item-card-remove" onClick={() => setNavItems(navItems.filter((_, j) => j !== i))} type="button" title="Remove">
-                  <Trash size={14} />
+                  <TrashIcon size={14} />
                 </button>
               </div>
               <div className="item-card-body">
@@ -124,7 +124,7 @@ export function ConfigEditor() {
             </div>
           ))}
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<Plus size={14} />} onClick={() => setNavItems([...navItems, { id: '', label: '', icon: '' }])}>
+        <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setNavItems([...navItems, { id: '', label: '', icon: '' }])}>
           Add Nav Item
         </ActionButton>
       </EditorCard>
@@ -140,7 +140,7 @@ export function ConfigEditor() {
                   <span className={`diff-badge diff-badge-${diff.field(`socials.${i}`, item)}`}>{diff.field(`socials.${i}`, item)}</span>
                 )}
                 <button className="item-card-remove" onClick={() => setSocials(socials.filter((_, j) => j !== i))} type="button" title="Remove">
-                  <Trash size={14} />
+                  <TrashIcon size={14} />
                 </button>
               </div>
               <div className="item-card-body">
@@ -153,7 +153,7 @@ export function ConfigEditor() {
             </div>
           ))}
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<Plus size={14} />} onClick={() => setSocials([...socials, { platform: '', url: '', label: '', icon: '' }])}>
+        <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setSocials([...socials, { platform: '', url: '', label: '', icon: '' }])}>
           Add Social Link
         </ActionButton>
       </EditorCard>
@@ -168,7 +168,7 @@ export function ConfigEditor() {
         <ActionButton
           variant="ghost"
           size="sm"
-          icon={<CloudArrowUp size={14} />}
+          icon={<CloudArrowUpIcon size={14} />}
           loading={isPublishing}
           onClick={() => publishSection('config')}
           disabled={!hasDirtyConfig}
@@ -177,7 +177,7 @@ export function ConfigEditor() {
         </ActionButton>
         <ActionButton
           variant="primary"
-          icon={<FloppyDisk size={16} />}
+          icon={<FloppyDiskIcon size={16} />}
           loading={isPublishing}
           onClick={publish}
         >

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChatCircleText, FloppyDisk, Plus, PencilSimple, Trash, CloudArrowUp } from '@phosphor-icons/react'
+import { ChatCircleTextIcon, FloppyDiskIcon, PlusIcon, PencilSimpleIcon, TrashIcon, CloudArrowUpIcon } from '@phosphor-icons/react'
 import { EditorCard } from '../components/EditorCard'
 import { TextInput, TextAreaInput } from '../components/FormField'
 import { ActionButton } from '../components/ActionButton'
@@ -114,7 +114,7 @@ export function FaqEditor() {
         <p className="editor-subtitle">Frequently asked questions</p>
       </div>
 
-      <EditorCard title="Page Config" icon={<ChatCircleText size={18} />}>
+      <EditorCard title="Page Config" icon={<ChatCircleTextIcon size={18} />}>
         <TextInput label="Eyebrow" value={eyebrow} onChange={setEyebrow} />
         <TextInput label="Title" value={title} onChange={setTitle} />
         <TextAreaInput label="Description" value={description} onChange={setDescription} rows={2} />
@@ -139,17 +139,17 @@ export function FaqEditor() {
                 </div>
                 <div className="list-item-actions">
                   <button className="list-item-btn" onClick={() => { setEditingId(faq._id); setForm({ question: faq.question, answer: faq.answer }); setShowForm(true) }} type="button">
-                    <PencilSimple size={14} /> Edit
+                    <PencilSimpleIcon size={14} /> Edit
                   </button>
                   <button className="list-item-btn list-item-btn-danger" onClick={() => setDeleteId(faq._id)} type="button">
-                    <Trash size={14} />
+                    <TrashIcon size={14} />
                   </button>
                 </div>
               </div>
             )
           }}
         />
-        <ActionButton variant="ghost" size="sm" icon={<Plus size={14} />} onClick={() => { setEditingId(null); setForm(emptyForm); setShowForm(true) }}>
+        <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => { setEditingId(null); setForm(emptyForm); setShowForm(true) }}>
           Add FAQ
         </ActionButton>
       </EditorCard>
@@ -160,7 +160,7 @@ export function FaqEditor() {
           <TextAreaInput label="Answer" value={form.answer} onChange={(v) => setForm({ ...form, answer: v })} rows={4} required />
           <div className="modal-form-actions">
             <ActionButton variant="ghost" onClick={() => { setShowForm(false); setEditingId(null) }}>Cancel</ActionButton>
-            <ActionButton variant="primary" icon={<FloppyDisk size={14} />} onClick={handleSaveFaq}>
+            <ActionButton variant="primary" icon={<FloppyDiskIcon size={14} />} onClick={handleSaveFaq}>
               {editingId ? 'Update' : 'Add'}
             </ActionButton>
           </div>
@@ -172,10 +172,10 @@ export function FaqEditor() {
           <span className="draft-pill-dot" />
           Draft — preview only
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUp size={14} />} loading={isPublishing} onClick={() => publishSection('faqItems')}>
+        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('faqItems')}>
           Publish FAQ Only
         </ActionButton>
-        <ActionButton variant="primary" icon={<FloppyDisk size={16} />} loading={isPublishing} onClick={publish}>
+        <ActionButton variant="primary" icon={<FloppyDiskIcon size={16} />} loading={isPublishing} onClick={publish}>
           Publish All
         </ActionButton>
       </div>

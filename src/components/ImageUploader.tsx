@@ -1,5 +1,5 @@
 import { useCallback, useRef, useState } from 'react'
-import { CloudArrowUp, Image, Trash } from '@phosphor-icons/react'
+import { CloudArrowUpIcon, ImageIcon, TrashIcon } from '@phosphor-icons/react'
 import { handleDraftImage } from '../lib/draftImageHandler'
 import './ImageUploader.css'
 
@@ -70,7 +70,7 @@ export function ImageUploader({ value, onChange, label }: ImageUploaderProps) {
               className="image-uploader-change"
               onClick={() => inputRef.current?.click()}
             >
-              <Image size={14} />
+              <ImageIcon size={14} />
               Change
             </button>
             <button
@@ -78,7 +78,7 @@ export function ImageUploader({ value, onChange, label }: ImageUploaderProps) {
               className="image-uploader-remove"
               onClick={() => onChange('')}
             >
-              <Trash size={14} />
+              <TrashIcon size={14} />
             </button>
           </div>
         </div>
@@ -93,7 +93,7 @@ export function ImageUploader({ value, onChange, label }: ImageUploaderProps) {
           onDrop={handleDrop}
           onClick={() => inputRef.current?.click()}
         >
-          <CloudArrowUp size={28} weight="light" />
+          <CloudArrowUpIcon size={28} weight="light" />
           <span className="image-uploader-text">
             {processing ? 'Processing…' : 'Drop image or click to browse'}
           </span>

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Star, FloppyDisk, Plus, Trash, CloudArrowUp } from '@phosphor-icons/react'
+import { StarIcon, FloppyDiskIcon, PlusIcon, TrashIcon, CloudArrowUpIcon } from '@phosphor-icons/react'
 import { EditorCard } from '../components/EditorCard'
 import { TextInput, TextAreaInput, SelectInput } from '../components/FormField'
 import { ActionButton } from '../components/ActionButton'
@@ -80,7 +80,7 @@ export function HeroEditor() {
         <p className="editor-subtitle">Landing area content and call-to-action</p>
       </div>
 
-      <EditorCard title="Content" icon={<Star size={18} />} description="Main heading and body text">
+      <EditorCard title="Content" icon={<StarIcon size={18} />} description="Main heading and body text">
         <TextInput label="Eyebrow" value={eyebrow} onChange={setEyebrow} placeholder="Small text above headline" diff={diff.field('heroContent.eyebrow', eyebrow)} />
         <TextInput label="Headline" value={headline} onChange={setHeadline} placeholder="Welcome to my portfolio." diff={diff.field('heroContent.headline', headline)} />
         <TextAreaInput label="Body" value={body} onChange={setBody} rows={3} placeholder="A brief intro about yourself…" diff={diff.field('heroContent.body', body)} />
@@ -111,7 +111,7 @@ export function HeroEditor() {
                   <span className="item-card-label">{btn.label || 'Untitled Button'}</span>
                   {btnDiff && <span className={`diff-badge diff-badge-${btnDiff}`}>{btnDiff}</span>}
                   <button className="item-card-remove" onClick={() => setCtaButtons(ctaButtons.filter((_, j) => j !== i))} type="button" title="Remove">
-                    <Trash size={14} />
+                    <TrashIcon size={14} />
                   </button>
                 </div>
                 <div className="item-card-body">
@@ -136,7 +136,7 @@ export function HeroEditor() {
             )
           })}
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<Plus size={14} />} onClick={() => setCtaButtons([...ctaButtons, { label: '', href: '', variant: 'primary' }])}>
+        <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setCtaButtons([...ctaButtons, { label: '', href: '', variant: 'primary' }])}>
           Add Button
         </ActionButton>
       </EditorCard>
@@ -148,10 +148,10 @@ export function HeroEditor() {
             Unsaved changes
           </div>
         )}
-        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUp size={14} />} loading={isPublishing} onClick={() => publishSection('config')} disabled={!hasDirty}>
+        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('config')} disabled={!hasDirty}>
           Publish Hero Only
         </ActionButton>
-        <ActionButton variant="primary" icon={<FloppyDisk size={16} />} loading={isPublishing} onClick={publish}>
+        <ActionButton variant="primary" icon={<FloppyDiskIcon size={16} />} loading={isPublishing} onClick={publish}>
           Publish All
         </ActionButton>
       </div>

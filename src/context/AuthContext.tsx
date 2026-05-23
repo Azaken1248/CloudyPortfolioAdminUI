@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { AuthUser } from '../types/api'
+import { apiFetch, AUTH_TOKEN_KEY } from '../config/api'
 
 type AuthState = {
   user: AuthUser | null
@@ -29,20 +30,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false
 
-    fetch('/api/auth/me', { credentials: 'include' })
-      .then(async (res) => {
+    apiFetch<AuthUser>('/auth/me')
+      .then((authUser) => {
         if (cancelled) return
-        if (!res.ok) {
-          setUser(null)
-          setIsLoading(false)
-          return
-        }
-        const json = await res.json()
-        if (json.success && json.data) {
-          setUser(json.data as AuthUser)
-        } else {
-          setUser(null)
-        }
+        setUser(authUser)
         setIsLoading(false)
       })
       .catch(() => {
@@ -63,6 +54,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     } catch {
       
     }
+    window.localStorage.clear()
     setUser(null)
     window.location.href = '/login'
   }, [])

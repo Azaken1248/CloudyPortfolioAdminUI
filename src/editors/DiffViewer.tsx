@@ -1,13 +1,13 @@
 import { useMemo } from 'react'
 import {
-  ArrowCounterClockwise,
-  FloppyDisk,
-  CloudArrowUp,
-  ArrowsClockwise,
-  Trash,
-  Plus,
-  PencilSimple,
-  CheckCircle,
+  ArrowCounterClockwiseIcon,
+  FloppyDiskIcon,
+  CloudArrowUpIcon,
+  ArrowsClockwiseIcon,
+  TrashIcon,
+  PlusIcon,
+  PencilSimpleIcon,
+  CheckCircleIcon,
 } from '@phosphor-icons/react'
 import { ActionButton } from '../components/ActionButton'
 import { useDraftStore } from '../store/useDraftStore'
@@ -311,7 +311,7 @@ export function DiffViewer() {
     return (
       <div className="diff-viewer">
         <div className="diff-viewer-empty">
-          <CheckCircle size={40} weight="light" />
+          <CheckCircleIcon size={40} weight="light" />
           <h3>No pending changes</h3>
           <p>All sections match the live site. Edits you make will appear here.</p>
         </div>
@@ -330,7 +330,7 @@ export function DiffViewer() {
           <ActionButton
             variant="ghost"
             size="sm"
-            icon={<ArrowsClockwise size={14} />}
+            icon={<ArrowsClockwiseIcon size={14} />}
             onClick={resetDraft}
           >
             Discard All
@@ -338,7 +338,7 @@ export function DiffViewer() {
           <ActionButton
             variant="primary"
             size="sm"
-            icon={<FloppyDisk size={14} />}
+            icon={<FloppyDiskIcon size={14} />}
             loading={isPublishing}
             onClick={publish}
           >
@@ -357,7 +357,7 @@ export function DiffViewer() {
                 <ActionButton
                   variant="ghost"
                   size="sm"
-                  icon={<CloudArrowUp size={12} />}
+                  icon={<CloudArrowUpIcon size={12} />}
                   loading={isPublishing}
                   onClick={() => publishSection(section as CollectionKey)}
                   className="diff-section-publish"
@@ -369,7 +369,7 @@ export function DiffViewer() {
                 <ActionButton
                   variant="ghost"
                   size="sm"
-                  icon={<CloudArrowUp size={12} />}
+                  icon={<CloudArrowUpIcon size={12} />}
                   loading={isPublishing}
                   onClick={() => publishSection('config')}
                   className="diff-section-publish"
@@ -386,9 +386,9 @@ export function DiffViewer() {
                   <div className="diff-item-content">
                     <div className="diff-item-header">
                       <span className="diff-item-icon">
-                        {change.type === 'collection' && (change as CollectionChange).action === 'added' && <Plus size={12} />}
-                        {change.type === 'collection' && (change as CollectionChange).action === 'removed' && <Trash size={12} />}
-                        {(change.type === 'config' || (change.type === 'collection' && (change as CollectionChange).action === 'modified')) && <PencilSimple size={12} />}
+                        {change.type === 'collection' && (change as CollectionChange).action === 'added' && <PlusIcon size={12} />}
+                        {change.type === 'collection' && (change as CollectionChange).action === 'removed' && <TrashIcon size={12} />}
+                        {(change.type === 'config' || (change.type === 'collection' && (change as CollectionChange).action === 'modified')) && <PencilSimpleIcon size={12} />}
                       </span>
                       <span className="diff-item-label">
                         {change.type === 'config' ? change.label : `${collectionLabel((change as CollectionChange).collection)}: ${(change as CollectionChange).label}`}
@@ -425,7 +425,7 @@ export function DiffViewer() {
                     title="Rollback this change"
                     type="button"
                   >
-                    <ArrowCounterClockwise size={14} />
+                    <ArrowCounterClockwiseIcon size={14} />
                   </button>
                 </div>
               ))}

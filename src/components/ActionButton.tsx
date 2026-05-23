@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { CircleNotch } from '@phosphor-icons/react'
+import { CircleNotchIcon } from '@phosphor-icons/react'
 import './ActionButton.css'
 
 type ActionButtonProps = {
@@ -33,7 +33,7 @@ export function ActionButton({
       disabled={disabled || loading}
     >
       {loading ? (
-        <CircleNotch size={16} className="action-btn-spinner" />
+        <CircleNotchIcon size={16} className="action-btn-spinner" />
       ) : (
         icon && <span className="action-btn-icon">{icon}</span>
       )}

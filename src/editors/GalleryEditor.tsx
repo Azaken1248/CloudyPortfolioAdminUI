@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Images, FloppyDisk, Plus, PencilSimple, Trash, CloudArrowUp } from '@phosphor-icons/react'
+import { ImagesIcon, FloppyDiskIcon, PlusIcon, PencilSimpleIcon, TrashIcon, CloudArrowUpIcon } from '@phosphor-icons/react'
 import { EditorCard } from '../components/EditorCard'
 import { TextInput, TextAreaInput } from '../components/FormField'
 import { ActionButton } from '../components/ActionButton'
@@ -131,7 +131,7 @@ export function GalleryEditor() {
         <p className="editor-subtitle">Manage artworks and gallery section content</p>
       </div>
 
-      <EditorCard title="Section Header" icon={<Images size={18} />}>
+      <EditorCard title="Section Header" icon={<ImagesIcon size={18} />}>
         <TextInput label="Eyebrow" value={eyebrow} onChange={setEyebrow} />
         <TextInput label="Title" value={title} onChange={setTitle} />
         <TextAreaInput label="Description" value={description} onChange={setDescription} rows={2} />
@@ -164,10 +164,10 @@ export function GalleryEditor() {
                     </span>
                   )}
                   <button className="list-item-btn" onClick={() => startEdit(artwork)} type="button">
-                    <PencilSimple size={14} /> Edit
+                    <PencilSimpleIcon size={14} /> Edit
                   </button>
                   <button className="list-item-btn list-item-btn-danger" onClick={() => setDeleteId(artwork._id)} type="button">
-                    <Trash size={14} />
+                    <TrashIcon size={14} />
                   </button>
                 </div>
               </div>
@@ -177,7 +177,7 @@ export function GalleryEditor() {
         <ActionButton
           variant="ghost"
           size="sm"
-          icon={<Plus size={14} />}
+          icon={<PlusIcon size={14} />}
           onClick={() => { setEditingId(null); setForm(emptyForm); setShowForm(true) }}
         >
           Add Artwork
@@ -193,7 +193,7 @@ export function GalleryEditor() {
           <TextInput label="Alt Text" value={form.altText} onChange={(v) => setForm({ ...form, altText: v })} />
           <div className="modal-form-actions">
             <ActionButton variant="ghost" onClick={() => { setShowForm(false); setEditingId(null) }}>Cancel</ActionButton>
-            <ActionButton variant="primary" icon={<FloppyDisk size={14} />} onClick={handleSaveArtwork}>
+            <ActionButton variant="primary" icon={<FloppyDiskIcon size={14} />} onClick={handleSaveArtwork}>
               {editingId ? 'Update' : 'Add'}
             </ActionButton>
           </div>
@@ -205,10 +205,10 @@ export function GalleryEditor() {
           <span className="draft-pill-dot" />
           Draft — preview only
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUp size={14} />} loading={isPublishing} onClick={() => publishSection('artworks')}>
+        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('artworks')}>
           Publish Gallery Only
         </ActionButton>
-        <ActionButton variant="primary" icon={<FloppyDisk size={16} />} loading={isPublishing} onClick={publish}>
+        <ActionButton variant="primary" icon={<FloppyDiskIcon size={16} />} loading={isPublishing} onClick={publish}>
           Publish All
         </ActionButton>
       </div>

@@ -15,7 +15,7 @@ import {
   verticalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { DotsSixVertical } from '@phosphor-icons/react'
+import { DotsSixVerticalIcon } from '@phosphor-icons/react'
 import './SortableList.css'
 
 type SortableItem = {
@@ -65,7 +65,7 @@ function SortableRow<T extends SortableItem>({
         {...attributes}
         {...listeners}
       >
-        <DotsSixVertical size={18} weight="bold" />
+        <DotsSixVerticalIcon size={18} weight="bold" />
       </button>
       <div className="sortable-content">{children}</div>
     </div>

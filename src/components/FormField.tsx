@@ -1,10 +1,11 @@
-import type { ReactNode } from 'react'
+import { useId, type ReactNode } from 'react'
 import './FormField.css'
 
 type DiffStatus = 'modified' | 'added' | 'removed' | undefined
 
 type FormFieldProps = {
   label: string
+  id?: string
   helper?: string
   error?: string
   required?: boolean
@@ -14,6 +15,7 @@ type FormFieldProps = {
 
 export function FormField({
   label,
+  id,
   helper,
   error,
   required,
@@ -22,7 +24,7 @@ export function FormField({
 }: FormFieldProps) {
   return (
     <div className={`form-field ${error ? 'has-error' : ''} ${diff ? `diff-${diff}` : ''}`}>
-      <label className="form-field-label">
+      <label className="form-field-label" htmlFor={id}>
         {label}
         {required && <span className="form-field-required">*</span>}
         {diff && <span className={`diff-badge diff-badge-${diff}`}>{diff}</span>}
@@ -59,9 +61,12 @@ export function TextInput({
   disabled,
   diff,
 }: TextInputProps) {
+  const inputId = useId()
+
   return (
-    <FormField label={label} helper={helper} error={error} required={required} diff={diff}>
+    <FormField label={label} id={inputId} helper={helper} error={error} required={required} diff={diff}>
       <input
+        id={inputId}
         type={type}
         className="form-input"
         value={value}
@@ -98,9 +103,12 @@ export function TextAreaInput({
   disabled,
   diff,
 }: TextAreaInputProps) {
+  const inputId = useId()
+
   return (
-    <FormField label={label} helper={helper} error={error} required={required} diff={diff}>
+    <FormField label={label} id={inputId} helper={helper} error={error} required={required} diff={diff}>
       <textarea
+        id={inputId}
         className="form-input form-textarea"
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -133,9 +141,12 @@ export function SelectInput({
   required,
   diff,
 }: SelectInputProps) {
+  const inputId = useId()
+
   return (
-    <FormField label={label} helper={helper} error={error} required={required} diff={diff}>
+    <FormField label={label} id={inputId} helper={helper} error={error} required={required} diff={diff}>
       <select
+        id={inputId}
         className="form-input form-select"
         value={value}
         onChange={(e) => onChange(e.target.value)}

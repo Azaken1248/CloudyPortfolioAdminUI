@@ -79,6 +79,39 @@ export function generateDraftId(): string {
   return `draft_${Date.now()}_${++draftIdCounter}`
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function mergeWithDefaults<T>(base: T, partial: Partial<T>): T {
+  if (Array.isArray(base)) {
+    return (Array.isArray(partial) ? partial : base) as T
+  }
+
+  if (isPlainObject(base) && isPlainObject(partial)) {
+    const merged: Record<string, unknown> = { ...base }
+
+    for (const [key, value] of Object.entries(partial)) {
+      if (value === undefined) continue
+
+      const baseValue = merged[key]
+      if (isPlainObject(baseValue) && isPlainObject(value)) {
+        merged[key] = mergeWithDefaults(baseValue, value)
+      } else {
+        merged[key] = value
+      }
+    }
+
+    return merged as T
+  }
+
+  return (partial ?? base) as T
+}
+
+function normalizePortfolioData(data: Partial<ApiPortfolioData>): ApiPortfolioData {
+  return mergeWithDefaults(structuredClone(DEFAULT_PORTFOLIO), data)
+}
+
 export const useDraftStore = create<DraftStore>()(
   devtools(
     (set, get) => ({
@@ -92,15 +125,34 @@ export const useDraftStore = create<DraftStore>()(
       previewKey: 0,
 
       fetchLiveState: async () => {
+        const previousLive = get().liveState
+        const currentDraft = get().draftState
+        const shouldSyncDraft = !currentDraft || (
+          previousLive && JSON.stringify(currentDraft) === JSON.stringify(previousLive)
+        )
+
+        set({ isLiveLoading: true })
+
         try {
-          const data = await apiFetch<ApiPortfolioData>('/portfolio')
+          const data = normalizePortfolioData(
+            await apiFetch<Partial<ApiPortfolioData>>('/portfolio')
+          )
           set({ liveState: data, liveError: null })
-          const current = get().draftState
-          if (current && JSON.stringify(current) === JSON.stringify(get().liveState)) {
+          if (shouldSyncDraft) {
             set({ draftState: structuredClone(data) })
           }
         } catch (err) {
           console.warn('[DraftStore] API refresh failed, using local baseline:', err)
+          const fallback = structuredClone(DEFAULT_PORTFOLIO)
+          set({
+            liveState: fallback,
+            liveError: err instanceof Error ? err : new Error(String(err)),
+          })
+          if (shouldSyncDraft) {
+            set({ draftState: structuredClone(DEFAULT_PORTFOLIO) })
+          }
+        } finally {
+          set({ isLiveLoading: false })
         }
       },
 

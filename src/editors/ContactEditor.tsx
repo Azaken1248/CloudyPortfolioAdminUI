@@ -1,12 +1,11 @@
 import { useEffect, useRef, useState } from 'react'
-import { Envelope, FloppyDisk, Plus, Trash, CloudArrowUp } from '@phosphor-icons/react'
+import { CloudArrowUpIcon, EnvelopeIcon, FloppyDiskIcon, PlusIcon, TrashIcon } from '@phosphor-icons/react'
 import { EditorCard } from '../components/EditorCard'
 import { TextInput, TextAreaInput, SelectInput } from '../components/FormField'
 import { ActionButton } from '../components/ActionButton'
 import { IconPicker } from '../components/IconPicker'
 import { useDraftStore, selectDraftState } from '../store/useDraftStore'
 import { usePublish } from '../hooks/usePublish'
-import { useDiff } from '../hooks/useDiff'
 import type { ApiFormField } from '../types/api'
 import '../editors/ConfigEditor.css'
 
@@ -15,8 +14,6 @@ export function ContactEditor() {
   const isLiveLoading = useDraftStore((s) => s.isLiveLoading)
   const updateDraftConfig = useDraftStore((s) => s.updateDraftConfig)
   const { publish, publishSection, isPublishing } = usePublish()
-  const diff = useDiff()
-
   const [eyebrow, setEyebrow] = useState('')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
@@ -61,7 +58,7 @@ export function ContactEditor() {
         form: { fields: formFields, submitLabel, submitIcon: submitIcon || undefined, disclaimer },
       },
     })
-    
+
   }, [eyebrow, title, description, infoTag, infoTitle, infoDescription, infoNotes, formFields, submitLabel, submitIcon, disclaimer])
 
   if (isLiveLoading || !draftState) {
@@ -75,7 +72,7 @@ export function ContactEditor() {
         <p className="editor-subtitle">Contact form and info card</p>
       </div>
 
-      <EditorCard title="Section Header" icon={<Envelope size={18} />}>
+      <EditorCard title="Section Header" icon={<EnvelopeIcon size={18} />}>
         <TextInput label="Eyebrow" value={eyebrow} onChange={setEyebrow} />
         <TextInput label="Title" value={title} onChange={setTitle} />
         <TextAreaInput label="Description" value={description} onChange={setDescription} rows={2} />
@@ -96,11 +93,11 @@ export function ContactEditor() {
                   setInfoNotes(copy)
                 }} />
                 <button className="point-remove-btn" onClick={() => setInfoNotes(infoNotes.filter((_, j) => j !== i))} type="button">
-                  <Trash size={14} />
+                  <TrashIcon size={14} />
                 </button>
               </div>
             ))}
-            <ActionButton variant="ghost" size="sm" icon={<Plus size={14} />} onClick={() => setInfoNotes([...infoNotes, ''])}>
+            <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setInfoNotes([...infoNotes, ''])}>
               Add Note
             </ActionButton>
           </div>
@@ -115,7 +112,7 @@ export function ContactEditor() {
                 <span className="item-card-number">{i + 1}</span>
                 <span className="item-card-label">{field.label || 'Untitled Field'}</span>
                 <button className="item-card-remove" onClick={() => setFormFields(formFields.filter((_, j) => j !== i))} type="button" title="Remove">
-                  <Trash size={14} />
+                  <TrashIcon size={14} />
                 </button>
               </div>
               <div className="item-card-body">
@@ -149,7 +146,7 @@ export function ContactEditor() {
             </div>
           ))}
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<Plus size={14} />} onClick={() => setFormFields([...formFields, { name: '', label: '', type: 'text', placeholder: '' }])}>
+        <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setFormFields([...formFields, { name: '', label: '', type: 'text', placeholder: '' }])}>
           Add Field
         </ActionButton>
       </EditorCard>
@@ -167,10 +164,10 @@ export function ContactEditor() {
           <span className="draft-pill-dot" />
           Draft — preview only
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUp size={14} />} loading={isPublishing} onClick={() => publishSection('config')}>
+        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('config')}>
           Publish Contact Only
         </ActionButton>
-        <ActionButton variant="primary" icon={<FloppyDisk size={16} />} loading={isPublishing} onClick={publish}>
+        <ActionButton variant="primary" icon={<FloppyDiskIcon size={16} />} loading={isPublishing} onClick={publish}>
           Publish All
         </ActionButton>
       </div>

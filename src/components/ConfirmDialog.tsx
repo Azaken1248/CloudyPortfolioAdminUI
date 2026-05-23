@@ -1,5 +1,5 @@
 import { useEffect, useRef, type ReactNode } from 'react'
-import { Warning } from '@phosphor-icons/react'
+import { WarningIcon } from '@phosphor-icons/react'
 import { ActionButton } from './ActionButton'
 import './ConfirmDialog.css'
 
@@ -43,7 +43,7 @@ export function ConfirmDialog({
     <dialog ref={dialogRef} className="confirm-dialog" onClose={onClose}>
       <div className="confirm-dialog-content">
         <div className="confirm-dialog-icon">
-          {icon ?? <Warning size={24} weight="fill" />}
+          {icon ?? <WarningIcon size={24} weight="fill" />}
         </div>
         <h3 className="confirm-dialog-title">{title}</h3>
         {description && (

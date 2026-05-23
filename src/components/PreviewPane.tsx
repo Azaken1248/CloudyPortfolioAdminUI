@@ -1,25 +1,28 @@
 import { useState, useCallback, useRef } from 'react'
 import {
-  Monitor,
-  DeviceTabletSpeaker,
-  DeviceMobile,
-  ArrowClockwise,
+  MonitorIcon,
+  DeviceTabletSpeakerIcon,
+  DeviceMobileIcon,
+  ArrowClockwiseIcon,
 } from '@phosphor-icons/react'
 import { usePreviewBridge } from '../lib/previewBridge'
+import { useDraftStore } from '../store/useDraftStore'
 import './PreviewPane.css'
 
 const PREVIEW_URL = 'http://localhost:5176/'
 
 const VIEWPORTS = [
-  { id: 'desktop', icon: Monitor, label: 'Desktop', width: '100%' },
-  { id: 'tablet', icon: DeviceTabletSpeaker, label: 'Tablet', width: '768px' },
-  { id: 'mobile', icon: DeviceMobile, label: 'Mobile', width: '375px' },
+  { id: 'desktop', icon: MonitorIcon, label: 'Desktop', width: '100%' },
+  { id: 'tablet', icon: DeviceTabletSpeakerIcon, label: 'Tablet', width: '768px' },
+  { id: 'mobile', icon: DeviceMobileIcon, label: 'Mobile', width: '375px' },
 ] as const
 
 export function PreviewPane() {
   const [viewport, setViewport] = useState<string>('desktop')
   const iframeRef = useRef<HTMLIFrameElement | null>(null)
   const { handleIframeLoad } = usePreviewBridge(iframeRef)
+  const previewKey = useDraftStore((s) => s.previewKey)
+  const isLiveLoading = useDraftStore((s) => s.isLiveLoading)
 
   const currentViewport = VIEWPORTS.find((v) => v.id === viewport) ?? VIEWPORTS[0]
 
@@ -56,7 +59,7 @@ export function PreviewPane() {
           title="Refresh preview"
           type="button"
         >
-          <ArrowClockwise size={15} />
+          <ArrowClockwiseIcon size={15} />
           <span className="preview-refresh-label">Refresh</span>
         </button>
       </div>
@@ -70,13 +73,20 @@ export function PreviewPane() {
           className="preview-iframe-container"
           style={{ width: currentViewport.width, maxWidth: '100%' }}
         >
-          <iframe
-            ref={iframeRef}
-            src={PREVIEW_URL}
-            className="preview-iframe"
-            title="Portfolio Preview"
-            onLoad={handleIframeLoad}
-          />
+          {isLiveLoading ? (
+            <div className="preview-skeleton" aria-busy="true">
+              Loading preview...
+            </div>
+          ) : (
+            <iframe
+              key={previewKey}
+              ref={iframeRef}
+              src={PREVIEW_URL}
+              className="preview-iframe"
+              title="Portfolio Preview"
+              onLoad={handleIframeLoad}
+            />
+          )}
         </div>
       </div>
     </div>

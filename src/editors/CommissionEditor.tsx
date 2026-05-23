@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Palette, FloppyDisk, Plus, PencilSimple, Trash, CloudArrowUp } from '@phosphor-icons/react'
+import { PaletteIcon, FloppyDiskIcon, PlusIcon, PencilSimpleIcon, TrashIcon, CloudArrowUpIcon } from '@phosphor-icons/react'
 import { EditorCard } from '../components/EditorCard'
 import { TextInput, TextAreaInput } from '../components/FormField'
 import { ActionButton } from '../components/ActionButton'
@@ -130,7 +130,7 @@ export function CommissionEditor() {
         <p className="editor-subtitle">Pricing tiers and featured commission</p>
       </div>
 
-      <EditorCard title="Section Header" icon={<Palette size={18} />}>
+      <EditorCard title="Section Header" icon={<PaletteIcon size={18} />}>
         <TextInput label="Eyebrow" value={eyebrow} onChange={setEyebrow} />
         <TextInput label="Title" value={title} onChange={setTitle} />
         <TextAreaInput label="Description" value={description} onChange={setDescription} rows={2} />
@@ -152,11 +152,11 @@ export function CommissionEditor() {
                   setFeaturedHighlights(copy)
                 }} />
                 <button className="point-remove-btn" onClick={() => setFeaturedHighlights(featuredHighlights.filter((_, j) => j !== i))} type="button">
-                  <Trash size={14} />
+                  <TrashIcon size={14} />
                 </button>
               </div>
             ))}
-            <ActionButton variant="ghost" size="sm" icon={<Plus size={14} />} onClick={() => setFeaturedHighlights([...featuredHighlights, ''])}>
+            <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setFeaturedHighlights([...featuredHighlights, ''])}>
               Add Highlight
             </ActionButton>
           </div>
@@ -177,17 +177,17 @@ export function CommissionEditor() {
                 </div>
                 <div className="list-item-actions">
                   <button className="list-item-btn" onClick={() => { setEditingId(tier._id); setForm({ name: tier.name, priceLabel: tier.priceLabel, detailTag: tier.detailTag, description: tier.description }); setShowForm(true) }} type="button">
-                    <PencilSimple size={14} /> Edit
+                    <PencilSimpleIcon size={14} /> Edit
                   </button>
                   <button className="list-item-btn list-item-btn-danger" onClick={() => setDeleteId(tier._id)} type="button">
-                    <Trash size={14} />
+                    <TrashIcon size={14} />
                   </button>
                 </div>
               </div>
             )
           }}
         />
-        <ActionButton variant="ghost" size="sm" icon={<Plus size={14} />} onClick={() => { setEditingId(null); setForm(emptyForm); setShowForm(true) }}>
+        <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => { setEditingId(null); setForm(emptyForm); setShowForm(true) }}>
           Add Tier
         </ActionButton>
       </EditorCard>
@@ -200,7 +200,7 @@ export function CommissionEditor() {
           <TextAreaInput label="Description" value={form.description} onChange={(v) => setForm({ ...form, description: v })} rows={2} />
           <div className="modal-form-actions">
             <ActionButton variant="ghost" onClick={() => { setShowForm(false); setEditingId(null) }}>Cancel</ActionButton>
-            <ActionButton variant="primary" icon={<FloppyDisk size={14} />} onClick={handleSaveTier}>
+            <ActionButton variant="primary" icon={<FloppyDiskIcon size={14} />} onClick={handleSaveTier}>
               {editingId ? 'Update' : 'Add'}
             </ActionButton>
           </div>
@@ -212,10 +212,10 @@ export function CommissionEditor() {
           <span className="draft-pill-dot" />
           Draft — preview only
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUp size={14} />} loading={isPublishing} onClick={() => publishSection('commissionTiers')}>
+        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('commissionTiers')}>
           Publish Commissions Only
         </ActionButton>
-        <ActionButton variant="primary" icon={<FloppyDisk size={16} />} loading={isPublishing} onClick={publish}>
+        <ActionButton variant="primary" icon={<FloppyDiskIcon size={16} />} loading={isPublishing} onClick={publish}>
           Publish All
         </ActionButton>
       </div>

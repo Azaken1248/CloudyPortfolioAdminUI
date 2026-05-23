@@ -1,27 +1,27 @@
 import {
-  Gear,
-  Star,
-  Images,
-  Palette,
-  ChatCircleText,
-  Shield,
-  Envelope,
-  SignOut,
-  Cloud,
-  GitDiff,
+  GearIcon,
+  StarIcon,
+  ImagesIcon,
+  PaletteIcon,
+  ChatCircleTextIcon,
+  ShieldIcon,
+  EnvelopeIcon,
+  SignOutIcon,
+  CloudIcon,
+  GitDiffIcon,
 } from '@phosphor-icons/react'
 import { useAuth } from '../context/AuthContext'
 import { useDraftStore } from '../store/useDraftStore'
 import './Sidebar.css'
 
 const NAV_ITEMS = [
-  { id: 'config', label: 'Site Config', icon: Gear },
-  { id: 'hero', label: 'Hero Section', icon: Star },
-  { id: 'gallery', label: 'Gallery', icon: Images },
-  { id: 'commissions', label: 'Commissions', icon: Palette },
-  { id: 'faq', label: 'FAQ', icon: ChatCircleText },
-  { id: 'tos', label: 'Terms of Service', icon: Shield },
-  { id: 'contact', label: 'Contact', icon: Envelope },
+  { id: 'config', label: 'Site Config', icon: GearIcon },
+  { id: 'hero', label: 'Hero Section', icon: StarIcon },
+  { id: 'gallery', label: 'Gallery', icon: ImagesIcon },
+  { id: 'commissions', label: 'Commissions', icon: PaletteIcon },
+  { id: 'faq', label: 'FAQ', icon: ChatCircleTextIcon },
+  { id: 'tos', label: 'Terms of Service', icon: ShieldIcon },
+  { id: 'contact', label: 'Contact', icon: EnvelopeIcon },
 ] as const
 
 type SidebarProps = {
@@ -41,7 +41,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     <aside className="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-logo">
-          <Cloud size={24} weight="fill" />
+          <CloudIcon size={24} weight="fill" />
           <span className="sidebar-logo-text">Cloudy Admin</span>
         </div>
       </div>
@@ -70,7 +70,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           onClick={() => onTabChange('changes')}
           type="button"
         >
-          <GitDiff size={18} weight={activeTab === 'changes' ? 'fill' : 'regular'} />
+          <GitDiffIcon size={18} weight={activeTab === 'changes' ? 'fill' : 'regular'} />
           <span>Changes</span>
           {isDirty && <span className="sidebar-changes-dot" />}
         </button>
@@ -97,7 +97,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
           </div>
         )}
         <button className="sidebar-logout" onClick={logout} type="button">
-          <SignOut size={16} />
+          <SignOutIcon size={16} />
           <span>Logout</span>
         </button>
       </div>

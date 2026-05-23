@@ -1,4 +1,18 @@
 const API_BASE = '/api'
+export const AUTH_TOKEN_KEY = 'cloudy_admin_token'
+
+function getAuthHeaders(headers: HeadersInit = {}): HeadersInit {
+  const token = window.localStorage.getItem(AUTH_TOKEN_KEY)
+  return {
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...headers,
+  }
+}
+
+function redirectToLogin() {
+  window.localStorage.clear()
+  window.location.href = '/login'
+}
 
 export const PORTFOLIO_URL =
   (import.meta as unknown as { env?: Record<string, string> }).env?.VITE_PORTFOLIO_URL ??
@@ -21,12 +35,12 @@ export async function apiFetch<T>(
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      ...options.headers,
+      ...getAuthHeaders(options.headers),
     },
   })
 
-  if (res.status === 401) {
-    window.location.href = '/login'
+  if (res.status === 401 || res.status === 403) {
+    redirectToLogin()
     throw new Error('Unauthorized')
   }
 
@@ -46,11 +60,12 @@ export async function apiUpload(file: File): Promise<string> {
   const res = await fetch(`${API_BASE}/upload`, {
     method: 'POST',
     credentials: 'include',
+    headers: getAuthHeaders(),
     body: formData,
   })
 
-  if (res.status === 401) {
-    window.location.href = '/login'
+  if (res.status === 401 || res.status === 403) {
+    redirectToLogin()
     throw new Error('Unauthorized')
   }
 

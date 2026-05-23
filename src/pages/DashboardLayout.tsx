@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { List, Eye, EyeSlash } from '@phosphor-icons/react'
+import { ListIcon, EyeIcon, EyeSlashIcon } from '@phosphor-icons/react'
 import { Sidebar } from '../components/Sidebar'
 import { PreviewPane } from '../components/PreviewPane'
 import { ConfigEditor } from '../editors/ConfigEditor'
@@ -66,7 +66,7 @@ export function DashboardLayout() {
             type="button"
             aria-label="Open menu"
           >
-            <List size={22} />
+            <ListIcon size={22} />
           </button>
           <span className="mobile-topbar-title">Cloudy Admin</span>
           <button
@@ -75,7 +75,7 @@ export function DashboardLayout() {
             type="button"
             aria-label="Toggle preview"
           >
-            {previewVisible ? <EyeSlash size={20} /> : <Eye size={20} />}
+            {previewVisible ? <EyeSlashIcon size={20} /> : <EyeIcon size={20} />}
           </button>
         </div>
 

@@ -1,8 +1,9 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { Cloud, DiscordLogo } from '@phosphor-icons/react'
+import { CloudIcon, DiscordLogoIcon } from '@phosphor-icons/react'
 import { useAuth } from '../context/AuthContext'
 import toast from 'react-hot-toast'
+import { AUTH_TOKEN_KEY } from '../config/api'
 import './LoginPage.css'
 
 type Star = {
@@ -232,7 +233,7 @@ function CloudLayer() {
     <div className="cloud-layer" aria-hidden="true">
       {[1, 2, 3, 4, 5].map((i) => (
         <div key={i} className={`floating-cloud cloud-${i}`}>
-          <Cloud size={i <= 2 ? 120 : i <= 4 ? 80 : 60} weight="fill" />
+          <CloudIcon size={i <= 2 ? 120 : i <= 4 ? 80 : 60} weight="fill" />
         </div>
       ))}
     </div>
@@ -245,19 +246,30 @@ export function LoginPage() {
   const [searchParams] = useSearchParams()
 
   useEffect(() => {
+    const token = searchParams.get('token')
+    if (token) {
+      window.localStorage.setItem(AUTH_TOKEN_KEY, token)
+      navigate('/admin', { replace: true })
+    }
+  }, [navigate, searchParams])
+
+  useEffect(() => {
     if (isAuthenticated) {
       navigate('/admin', { replace: true })
     }
   }, [isAuthenticated, navigate])
 
   useEffect(() => {
+    const code = searchParams.get('code')
     const error = searchParams.get('error')
-    if (error === 'unauthorized') {
+    if (code) {
+      toast.error('Authentication failed', { duration: 4000 })
+    } else if (error === 'unauthorized') {
       toast.error('Access denied. Your Discord account is not whitelisted.', {
         duration: 5000,
       })
     } else if (error === 'discord_error') {
-      toast.error('Discord authentication failed. Please try again.', {
+      toast.error('Authentication failed', {
         duration: 4000,
       })
     } else if (error === 'missing_code') {
@@ -290,7 +302,7 @@ export function LoginPage() {
       <div className="login-card">
         <div className="login-logo">
           <div className="login-logo-icon">
-            <Cloud size={28} weight="fill" />
+            <CloudIcon size={28} weight="fill" />
           </div>
           <h1 className="login-title">Cloudy Admin</h1>
           <p className="login-subtitle">Artist Portfolio CMS</p>
@@ -308,7 +320,7 @@ export function LoginPage() {
             onClick={handleLogin}
             type="button"
           >
-            <DiscordLogo size={20} weight="fill" />
+            <DiscordLogoIcon size={20} weight="fill" />
             <span>Continue with Discord</span>
           </button>
         </div>

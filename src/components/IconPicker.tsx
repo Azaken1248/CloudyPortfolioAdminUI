@@ -6,56 +6,56 @@ import { apiUpload } from '../config/api'
 import './IconPicker.css'
 
 const ICON_LIST: { name: string; component: PhosphorIcon }[] = [
-  { name: 'House', component: Icons.House },
-  { name: 'Image', component: Icons.Image },
-  { name: 'Palette', component: Icons.Palette },
-  { name: 'ChatCircleText', component: Icons.ChatCircleText },
-  { name: 'Envelope', component: Icons.Envelope },
-  { name: 'Gear', component: Icons.Gear },
-  { name: 'User', component: Icons.User },
-  { name: 'Star', component: Icons.Star },
-  { name: 'Heart', component: Icons.Heart },
-  { name: 'MagnifyingGlass', component: Icons.MagnifyingGlass },
-  { name: 'InstagramLogo', component: Icons.InstagramLogo },
-  { name: 'TwitterLogo', component: Icons.TwitterLogo },
-  { name: 'DiscordLogo', component: Icons.DiscordLogo },
-  { name: 'YoutubeLogo', component: Icons.YoutubeLogo },
-  { name: 'TiktokLogo', component: Icons.TiktokLogo },
-  { name: 'GithubLogo', component: Icons.GithubLogo },
-  { name: 'LinkedinLogo', component: Icons.LinkedinLogo },
-  { name: 'TwitchLogo', component: Icons.TwitchLogo },
-  { name: 'LinkSimple', component: Icons.LinkSimple },
-  { name: 'Globe', component: Icons.Globe },
-  { name: 'Cloud', component: Icons.Cloud },
-  { name: 'PaintBrush', component: Icons.PaintBrush },
-  { name: 'PencilSimple', component: Icons.PencilSimple },
-  { name: 'Camera', component: Icons.Camera },
-  { name: 'Sparkle', component: Icons.Sparkle },
-  { name: 'Diamond', component: Icons.Diamond },
-  { name: 'Crown', component: Icons.Crown },
-  { name: 'Lightning', component: Icons.Lightning },
-  { name: 'Fire', component: Icons.Fire },
-  { name: 'MusicNote', component: Icons.MusicNote },
-  { name: 'ArrowRight', component: Icons.ArrowRight },
-  { name: 'ArrowLeft', component: Icons.ArrowLeft },
-  { name: 'CaretDown', component: Icons.CaretDown },
-  { name: 'Check', component: Icons.Check },
-  { name: 'X', component: Icons.X },
-  { name: 'Plus', component: Icons.Plus },
-  { name: 'Info', component: Icons.Info },
-  { name: 'Warning', component: Icons.Warning },
-  { name: 'Eye', component: Icons.Eye },
-  { name: 'ShieldCheck', component: Icons.ShieldCheck },
-  { name: 'Article', component: Icons.Article },
-  { name: 'BookOpen', component: Icons.BookOpen },
-  { name: 'Tag', component: Icons.Tag },
-  { name: 'CalendarBlank', component: Icons.CalendarBlank },
-  { name: 'Clock', component: Icons.Clock },
-  { name: 'MapPin', component: Icons.MapPin },
-  { name: 'Money', component: Icons.Money },
-  { name: 'Gift', component: Icons.Gift },
-  { name: 'Handshake', component: Icons.Handshake },
-  { name: 'Smiley', component: Icons.Smiley },
+  { name: 'House', component: Icons.HouseIcon },
+  { name: 'Image', component: Icons.ImageIcon },
+  { name: 'Palette', component: Icons.PaletteIcon },
+  { name: 'ChatCircleText', component: Icons.ChatCircleTextIcon },
+  { name: 'Envelope', component: Icons.EnvelopeIcon },
+  { name: 'Gear', component: Icons.GearIcon },
+  { name: 'User', component: Icons.UserIcon },
+  { name: 'Star', component: Icons.StarIcon },
+  { name: 'Heart', component: Icons.HeartIcon },
+  { name: 'MagnifyingGlass', component: Icons.MagnifyingGlassIcon },
+  { name: 'InstagramLogo', component: Icons.InstagramLogoIcon },
+  { name: 'TwitterLogo', component: Icons.TwitterLogoIcon },
+  { name: 'DiscordLogo', component: Icons.DiscordLogoIcon },
+  { name: 'YoutubeLogo', component: Icons.YoutubeLogoIcon },
+  { name: 'TiktokLogo', component: Icons.TiktokLogoIcon },
+  { name: 'GithubLogo', component: Icons.GithubLogoIcon },
+  { name: 'LinkedinLogo', component: Icons.LinkedinLogoIcon },
+  { name: 'TwitchLogo', component: Icons.TwitchLogoIcon },
+  { name: 'LinkSimple', component: Icons.LinkSimpleIcon },
+  { name: 'Globe', component: Icons.GlobeIcon },
+  { name: 'Cloud', component: Icons.CloudIcon },
+  { name: 'PaintBrush', component: Icons.PaintBrushIcon },
+  { name: 'PencilSimple', component: Icons.PencilSimpleIcon },
+  { name: 'Camera', component: Icons.CameraIcon },
+  { name: 'Sparkle', component: Icons.SparkleIcon },
+  { name: 'Diamond', component: Icons.DiamondIcon },
+  { name: 'Crown', component: Icons.CrownIcon },
+  { name: 'Lightning', component: Icons.LightningIcon },
+  { name: 'Fire', component: Icons.FireIcon },
+  { name: 'MusicNote', component: Icons.MusicNoteIcon },
+  { name: 'ArrowRight', component: Icons.ArrowRightIcon },
+  { name: 'ArrowLeft', component: Icons.ArrowLeftIcon },
+  { name: 'CaretDown', component: Icons.CaretDownIcon },
+  { name: 'Check', component: Icons.CheckIcon },
+  { name: 'X', component: Icons.XIcon },
+  { name: 'Plus', component: Icons.PlusIcon },
+  { name: 'Info', component: Icons.InfoIcon },
+  { name: 'Warning', component: Icons.WarningIcon },
+  { name: 'Eye', component: Icons.EyeIcon },
+  { name: 'ShieldCheck', component: Icons.ShieldCheckIcon },
+  { name: 'Article', component: Icons.ArticleIcon },
+  { name: 'BookOpen', component: Icons.BookOpenIcon },
+  { name: 'Tag', component: Icons.TagIcon },
+  { name: 'CalendarBlank', component: Icons.CalendarBlankIcon },
+  { name: 'Clock', component: Icons.ClockIcon },
+  { name: 'MapPin', component: Icons.MapPinIcon },
+  { name: 'Money', component: Icons.MoneyIcon },
+  { name: 'Gift', component: Icons.GiftIcon },
+  { name: 'Handshake', component: Icons.HandshakeIcon },
+  { name: 'Smiley', component: Icons.SmileyIcon },
 ]
 
 type IconPickerProps = {
@@ -178,7 +178,7 @@ export function IconPicker({ label, value, onChange, helper, diff }: IconPickerP
         <span className="icon-picker-value">
           {isUrl(value) ? 'Custom image' : value || 'Choose icon…'}
         </span>
-        <Icons.CaretDown
+        <Icons.CaretDownIcon
           size={14}
           className={`icon-picker-caret ${open ? 'rotated' : ''}`}
         />
@@ -204,21 +204,21 @@ export function IconPicker({ label, value, onChange, helper, diff }: IconPickerP
               className={`icon-picker-tab ${tab === 'icons' ? 'active' : ''}`}
               onClick={() => setTab('icons')}
             >
-              <Icons.GridFour size={14} /> Icons
+              <Icons.GridFourIcon size={14} /> Icons
             </button>
             <button
               type="button"
               className={`icon-picker-tab ${tab === 'upload' ? 'active' : ''}`}
               onClick={() => setTab('upload')}
             >
-              <Icons.CloudArrowUp size={14} /> Upload
+              <Icons.CloudArrowUpIcon size={14} /> Upload
             </button>
           </div>
 
           {tab === 'icons' && (
             <>
               <div className="icon-picker-search-wrap">
-                <Icons.MagnifyingGlass size={14} className="icon-picker-search-icon" />
+                <Icons.MagnifyingGlassIcon size={14} className="icon-picker-search-icon" />
                 <input
                   ref={searchRef}
                   className="icon-picker-search"
@@ -256,7 +256,7 @@ export function IconPicker({ label, value, onChange, helper, diff }: IconPickerP
                     className="icon-picker-upload-clear"
                     onClick={() => { onChange(''); setOpen(false) }}
                   >
-                    <Icons.Trash size={14} /> Remove
+                    <Icons.TrashIcon size={14} /> Remove
                   </button>
                 </div>
               )}
@@ -277,9 +277,9 @@ export function IconPicker({ label, value, onChange, helper, diff }: IconPickerP
                 disabled={uploading}
               >
                 {uploading ? (
-                  <><Icons.CircleNotch size={16} className="icon-spinner" /> Uploading…</>
+                  <><Icons.CircleNotchIcon size={16} className="icon-spinner" /> Uploading…</>
                 ) : (
-                  <><Icons.CloudArrowUp size={16} /> Upload custom icon</>
+                  <><Icons.CloudArrowUpIcon size={16} /> Upload custom icon</>
                 )}
               </button>
               <p className="icon-picker-upload-hint">
