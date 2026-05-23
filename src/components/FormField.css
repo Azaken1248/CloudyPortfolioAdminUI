@@ -1,0 +1,109 @@
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.form-field-label {
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.form-field-required {
+  color: var(--ctp-pink);
+  font-size: 0.9em;
+}
+.form-input {
+  padding: 9px 12px;
+  background: var(--bg-input);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  transition: all var(--duration-fast) var(--ease-out);
+  width: 100%;
+}
+.form-input::placeholder {
+  color: var(--text-muted);
+}
+.form-input:hover {
+  border-color: var(--ctp-surface2);
+}
+.form-input:focus {
+  border-color: var(--ctp-blue);
+  box-shadow: 0 0 0 3px rgba(138, 173, 244, 0.15);
+  outline: none;
+}
+.form-textarea {
+  resize: vertical;
+  min-height: 72px;
+  line-height: 1.5;
+}
+.form-select {
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12' fill='none'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' stroke='%238087A2' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
+.form-select option {
+  background: var(--ctp-base);
+  color: var(--text-primary);
+}
+.form-field-helper {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.form-field-error {
+  font-size: 0.78rem;
+  color: var(--ctp-red);
+  line-height: 1.4;
+}
+.has-error .form-input {
+  border-color: var(--ctp-red);
+}
+.has-error .form-input:focus {
+  box-shadow: 0 0 0 3px rgba(237, 135, 150, 0.15);
+}
+.form-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.diff-modified {
+  border-left: 3px solid var(--ctp-yellow);
+  padding-left: 10px;
+}
+.diff-added {
+  border-left: 3px solid var(--ctp-green);
+  padding-left: 10px;
+}
+.diff-removed {
+  border-left: 3px solid var(--ctp-red);
+  padding-left: 10px;
+  opacity: 0.6;
+}
+.diff-badge {
+  font-size: 0.65rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 1px 6px;
+  border-radius: var(--radius-full);
+  margin-left: 6px;
+}
+.diff-badge-modified {
+  background: rgba(238, 212, 159, 0.15);
+  color: var(--ctp-yellow);
+}
+.diff-badge-added {
+  background: rgba(166, 218, 149, 0.15);
+  color: var(--ctp-green);
+}
+.diff-badge-removed {
+  background: rgba(237, 135, 150, 0.15);
+  color: var(--ctp-red);
+}
