@@ -276,7 +276,7 @@ export async function executePublishPlan(plan: PublishPlan): Promise<void> {
       case 'update': {
         const endpoint = COLLECTION_ENDPOINTS[op.collection]
         await apiFetch(`${endpoint}/${op.id}`, {
-          method: 'PATCH',
+          method: 'PUT',
           body: JSON.stringify(op.payload),
         })
         break
@@ -293,7 +293,7 @@ export async function executePublishPlan(plan: PublishPlan): Promise<void> {
 
       case 'config': {
         await apiFetch('/config', {
-          method: 'PATCH',
+          method: 'PUT',
           body: JSON.stringify(op.payload),
         })
         break

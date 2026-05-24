@@ -107,8 +107,8 @@ describe('executePublishPlan', () => {
     expect(sortCall).toBeDefined()
 
     expect((createCall?.[1] as RequestInit).method).toBe('POST')
-    expect((updateCall?.[1] as RequestInit).method).toBe('PATCH')
-    expect((configCall?.[1] as RequestInit).method).toBe('PATCH')
+    expect((updateCall?.[1] as RequestInit).method).toBe('PUT')
+    expect((configCall?.[1] as RequestInit).method).toBe('PUT')
     expect((sortCall?.[1] as RequestInit).method).toBe('PUT')
 
     expect(JSON.parse(String(createCall?.[1]?.body)).image).toBe('https://cdn.example.com/hero.png')
