@@ -9,7 +9,10 @@ import { usePreviewBridge } from '../lib/previewBridge'
 import { useDraftStore } from '../store/useDraftStore'
 import './PreviewPane.css'
 
-const PREVIEW_URL = 'http://localhost:5176/'
+const PREVIEW_URL =
+  import.meta.env.MODE === 'production'
+    ? '/api/preview'
+    : 'http://localhost:5176/'
 
 const VIEWPORTS = [
   { id: 'desktop', icon: MonitorIcon, label: 'Desktop', width: '100%' },

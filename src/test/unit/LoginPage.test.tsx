@@ -33,7 +33,7 @@ describe('LoginPage', () => {
 
     originalLocation = window.location
     delete (window as unknown as { location?: Location }).location
-    window.location = { href: 'http://localhost/login' } as Location
+    Object.defineProperty(window, 'location', { value: { href: 'http://localhost/login' }, writable: true, configurable: true })
 
     originalInnerWidth = window.innerWidth
     originalInnerHeight = window.innerHeight
@@ -43,7 +43,7 @@ describe('LoginPage', () => {
   })
 
   afterEach(() => {
-    window.location = originalLocation
+    Object.defineProperty(window, 'location', { value: originalLocation, writable: true, configurable: true })
     Object.defineProperty(window, 'innerWidth', { value: originalInnerWidth, writable: true })
     Object.defineProperty(window, 'innerHeight', { value: originalInnerHeight, writable: true })
   })

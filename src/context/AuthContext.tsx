@@ -7,7 +7,7 @@ import {
   type ReactNode,
 } from 'react'
 import type { AuthUser } from '../types/api'
-import { apiFetch, AUTH_TOKEN_KEY } from '../config/api'
+import { apiFetch } from '../config/api'
 
 type AuthState = {
   user: AuthUser | null

@@ -67,7 +67,7 @@ describe('executePublishPlan', () => {
           payload: {
             heroContent: {
               image: 'blob:hero',
-            },
+            } as any,
           },
         },
       ],

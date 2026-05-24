@@ -9,14 +9,14 @@ describe('api helpers', () => {
     originalFetch = globalThis.fetch
     originalLocation = window.location
     delete (window as unknown as { location?: Location }).location
-    window.location = { href: 'http://localhost/admin' } as Location
+    Object.defineProperty(window, 'location', { value: { href: 'http://localhost/admin' }, writable: true, configurable: true })
     window.localStorage.clear()
     window.localStorage.setItem(AUTH_TOKEN_KEY, 'jwt-token')
   })
 
   afterEach(() => {
     globalThis.fetch = originalFetch
-    window.location = originalLocation
+    Object.defineProperty(window, 'location', { value: originalLocation, writable: true, configurable: true })
     vi.restoreAllMocks()
   })
 

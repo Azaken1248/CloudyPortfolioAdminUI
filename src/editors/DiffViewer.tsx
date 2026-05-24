@@ -303,7 +303,7 @@ export function DiffViewer() {
     } else if (change.action === 'modified' && change.liveItem) {
       const list = ((draftState as unknown as Record<string, unknown>)[change.collection] as { _id: string }[])
         .map((item) => (item._id === change.id ? change.liveItem : item))
-      updateDraftSection(change.collection, list as unknown as typeof draftState[typeof change.collection])
+      updateDraftSection(change.collection, list as any)
     }
   }
 

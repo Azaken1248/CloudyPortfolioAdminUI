@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/preview/:path*",
+      "destination": "/api/preview"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://cloudyadminapi.azaken.com/api/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
