@@ -92,6 +92,28 @@ const PREVIEW_SCRIPT = `<script>
 })();
 </script>`
 
+
+function ogAbsoluteUrlPlugin(): Plugin {
+  return {
+    name: 'og-absolute-url',
+    transformIndexHtml(html) {
+      const siteUrl = (
+        process.env.VITE_SITE_URL ||
+        (process.env.VERCEL_PROJECT_PRODUCTION_URL
+          ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+          : '')
+      ).replace(/\/$/, '')
+
+      if (!siteUrl) return html
+
+      return html.replace(
+        /(<meta\s[^>]*(?:property="og:image"|name="twitter:image")[^>]*content=")\/([^"]*")/g,
+        `$1${siteUrl}/$2`
+      )
+    },
+  }
+}
+
 function portfolioPreviewPlugin(): Plugin {
   return {
     name: 'portfolio-preview-proxy',
@@ -130,7 +152,7 @@ function portfolioPreviewPlugin(): Plugin {
 }
 
 export default defineConfig({
-  plugins: [react(), portfolioPreviewPlugin()],
+  plugins: [react(), ogAbsoluteUrlPlugin(), portfolioPreviewPlugin()],
   server: {
     port: 5174,
     proxy: {
