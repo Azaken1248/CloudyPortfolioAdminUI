@@ -15,10 +15,8 @@ describe('useDiff hook', () => {
   it('TC-026: field() returns "modified" when a nested config value changes', () => {
     const { result } = renderHook(() => useDiff())
     
-    // Unchanged
     expect(result.current.field('siteConfig.siteName', DEFAULT_PORTFOLIO.siteConfig.siteName)).toBeUndefined()
     
-    // Changed
     expect(result.current.field('siteConfig.siteName', 'Changed Name')).toBe('modified')
     expect(result.current.field('heroContent.eyebrow', 'Changed Eyebrow')).toBe('modified')
   })
@@ -48,10 +46,8 @@ describe('useDiff hook', () => {
     const { result } = renderHook(() => useDiff())
     const allIds = DEFAULT_PORTFOLIO.artworks.map(a => a._id)
     
-    // Nothing removed
     expect(result.current.removedItems('artworks', allIds)).toEqual([])
     
-    // Remove the first item
     const missingOne = allIds.slice(1)
     expect(result.current.removedItems('artworks', missingOne)).toEqual([allIds[0]])
   })
@@ -60,10 +56,8 @@ describe('useDiff hook', () => {
     const { result } = renderHook(() => useDiff())
     expect(result.current.sectionDirty('siteConfig')).toBe(false)
     
-    // Change draft
     useDraftStore.getState().updateDraftConfig({ siteConfig: { ...DEFAULT_PORTFOLIO.siteConfig, siteName: 'Modified Config' } })
     
-    // We don't even need to rerender because sectionDirty checks draftState directly
     expect(result.current.sectionDirty('siteConfig')).toBe(true)
   })
 })

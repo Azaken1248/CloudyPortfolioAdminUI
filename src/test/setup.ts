@@ -2,12 +2,10 @@ import '@testing-library/jest-dom'
 import { afterEach, vi } from 'vitest'
 import { cleanup } from '@testing-library/react'
 
-// Runs a cleanup after each test case (e.g. clearing jsdom)
 afterEach(() => {
   cleanup()
 })
 
-// Mock generic browser APIs if needed
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
   value: (query: string) => ({
@@ -64,12 +62,10 @@ Object.defineProperty(HTMLCanvasElement.prototype, 'getContext', {
   value: vi.fn((contextId: string) => (contextId === '2d' ? canvasContextMock : null)),
 })
 
-// Reset localStorage
 afterEach(() => {
   window.localStorage.clear()
 })
 
-// Mock Dialog
 if (typeof HTMLDialogElement === 'undefined') {
   (window as any).HTMLDialogElement = class HTMLDialogElement extends HTMLElement {}
 }

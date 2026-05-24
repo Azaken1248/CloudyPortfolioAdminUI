@@ -4,7 +4,6 @@ import { DiffViewer } from '../../editors/DiffViewer'
 import { useDraftStore } from '../../store/useDraftStore'
 import { DEFAULT_PORTFOLIO } from '../../data/defaultPortfolio'
 
-// Mock react-hot-toast
 vi.mock('react-hot-toast', () => ({
   default: {
     success: vi.fn(),
@@ -27,14 +26,11 @@ describe('DiffViewer', () => {
   })
 
   it('TC-077: correctly groups changes by section', () => {
-    // Make a config change
     useDraftStore.getState().updateDraftConfig({ siteConfig: { ...DEFAULT_PORTFOLIO.siteConfig, siteName: 'New Site Name' } })
-    // Make a gallery change
     useDraftStore.getState().updateDraftItem('artworks', DEFAULT_PORTFOLIO.artworks[0]._id, { title: 'New Art Title' } as any)
     
     render(<DiffViewer />)
     
-    // Check section headers
     expect(screen.getByText('Branding')).toBeInTheDocument()
     expect(screen.getByText('Gallery Items')).toBeInTheDocument()
   })
@@ -57,13 +53,11 @@ describe('DiffViewer', () => {
     
     render(<DiffViewer />)
     
-    // Rollback button
     const rollbackBtn = screen.getByTitle('Rollback this change')
     fireEvent.click(rollbackBtn)
     
     const draft = useDraftStore.getState().draftState!
     expect(draft.siteConfig.siteName).toBe(oldName)
-    // Should revert back to empty state since there are no more changes
     expect(screen.getByText(/No pending changes/i)).toBeInTheDocument()
   })
 

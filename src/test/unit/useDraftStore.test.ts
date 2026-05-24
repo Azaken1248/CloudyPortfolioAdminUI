@@ -12,7 +12,6 @@ const apiFetchMock = vi.mocked(apiFetch)
 describe('useDraftStore', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    // Reset store before each test
     useDraftStore.setState({
       liveState: structuredClone(DEFAULT_PORTFOLIO),
       draftState: structuredClone(DEFAULT_PORTFOLIO),
@@ -29,7 +28,6 @@ describe('useDraftStore', () => {
     
     const draft = useDraftStore.getState().draftState!
     expect(draft.siteConfig.siteName).toBe('New Test Name')
-    // Ensure others are intact
     expect(draft.siteConfig.siteSubtitle).toBe(DEFAULT_PORTFOLIO.siteConfig.siteSubtitle)
     expect(draft.artworks).toEqual(DEFAULT_PORTFOLIO.artworks)
   })
@@ -83,7 +81,6 @@ describe('useDraftStore', () => {
     const draft = useDraftStore.getState().draftState!
     const updatedItem = draft.artworks.find(a => a._id === targetId)
     expect(updatedItem?.title).toBe('Updated Title')
-    // Original fields remain
     expect(updatedItem?.description).toBeTruthy()
   })
 
@@ -101,7 +98,7 @@ describe('useDraftStore', () => {
 
   it('TC-022: reorderDraftItems sequentially assigns sortOrder from 0 to n-1', () => {
     const store = useDraftStore.getState()
-    const items = [...store.draftState!.artworks].reverse() // Reverse the array
+    const items = [...store.draftState!.artworks].reverse()
     
     store.reorderDraftItems('artworks', items)
     
@@ -132,7 +129,6 @@ describe('useDraftStore', () => {
     const store = useDraftStore.getState()
     expect(store.isDirty()).toBe(false)
     
-    // Create a new reference but same content
     store.updateDraftSection('heroContent', structuredClone(DEFAULT_PORTFOLIO.heroContent))
     expect(useDraftStore.getState().isDirty()).toBe(false)
   })

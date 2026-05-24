@@ -7,7 +7,7 @@ describe('publishEngine', () => {
   it('TC-083: sequences uploads first', () => {
     const live = structuredClone(DEFAULT_PORTFOLIO)
     const draft = structuredClone(DEFAULT_PORTFOLIO)
-    draft.siteConfig.siteName = 'Changed Name' // trigger config update
+    draft.siteConfig.siteName = 'Changed Name'
     
     const pending = new Map<string, PendingUpload>()
     pending.set('blob:test', { localUrl: 'blob:test', file: new File([], 'test.png') })
@@ -22,8 +22,7 @@ describe('publishEngine', () => {
     const live = structuredClone(DEFAULT_PORTFOLIO)
     const draft = structuredClone(DEFAULT_PORTFOLIO)
     
-    // Remove one item, add one item
-    draft.artworks.shift() // removes first item
+    draft.artworks.shift()
     draft.artworks.push({
       _id: 'draft_123',
       title: 'New',
@@ -55,7 +54,6 @@ describe('publishEngine', () => {
     expect(configOp).toBeDefined()
     expect(configOp.payload.siteConfig.siteName).toBe('New Name')
     expect(configOp.payload.heroContent.headline).toBe('New Headline')
-    // Shouldn't include unmodified top-level objects if they're completely unchanged
     expect(configOp.payload.footerContent).toBeUndefined()
   })
 
@@ -63,7 +61,6 @@ describe('publishEngine', () => {
     const live = structuredClone(DEFAULT_PORTFOLIO)
     const draft = structuredClone(DEFAULT_PORTFOLIO)
     
-    // Swap sortOrder of first two artworks
     draft.artworks[0].sortOrder = 1
     draft.artworks[1].sortOrder = 0
     

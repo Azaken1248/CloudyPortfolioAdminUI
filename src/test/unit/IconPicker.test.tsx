@@ -3,7 +3,6 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { IconPicker } from '../../components/IconPicker'
 import { useDraftStore } from '../../store/useDraftStore'
 
-// Mock Phosphor Icons to keep snapshot small
 vi.mock('@phosphor-icons/react', async (importOriginal) => {
   const actual = await importOriginal()
   return {
@@ -14,7 +13,6 @@ vi.mock('@phosphor-icons/react', async (importOriginal) => {
   }
 })
 
-// Mock apiUpload
 vi.mock('../../config/api', () => ({
   apiUpload: vi.fn((file) => Promise.resolve(`https://cdn.example.com/${file.name}`))
 }))
@@ -34,7 +32,6 @@ describe('IconPicker', () => {
     render(<IconPicker value="Star" label="Test" onChange={() => {}} />)
     fireEvent.click(screen.getByRole('button'))
     
-    // Check if icons are rendered by title
     expect(screen.getByTitle('Star')).toBeInTheDocument()
     expect(screen.getByTitle('Heart')).toBeInTheDocument()
     expect(screen.getByTitle('Lightning')).toBeInTheDocument()
@@ -54,10 +51,8 @@ describe('IconPicker', () => {
   it('TC-072: "Upload" tab accepts images and triggers upload via apiUpload', async () => {
     const onChangeMock = vi.fn()
     render(<IconPicker value="Star" label="Test" onChange={onChangeMock} />)
-    // Click the main trigger button to open
     fireEvent.click(screen.getByText('Star'))
     
-    // Switch to Upload tab
     fireEvent.click(screen.getByText(/Upload/i))
     
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
@@ -75,7 +70,6 @@ describe('IconPicker', () => {
   it('TC-073: uploading a file larger than 5MB triggers an error toast (if implemented)', async () => {
     const onChangeMock = vi.fn()
     render(<IconPicker value="Star" label="Test" onChange={onChangeMock} />)
-    // Click the main trigger button to open
     fireEvent.click(screen.getByText('Star'))
     
     fireEvent.click(screen.getByText(/Upload/i))
@@ -83,8 +77,6 @@ describe('IconPicker', () => {
     const fileInput = document.querySelector('input[type="file"]') as HTMLInputElement
     const largeFile = new File([new Array(6 * 1024 * 1024).fill('a').join('')], 'large.png', { type: 'image/png' })
     
-    // If we throw on large size, apiUpload would reject or size validation blocks it.
-    // For now we test it calls apiUpload.
     fireEvent.change(fileInput, { target: { files: [largeFile] } })
     
     await waitFor(() => {

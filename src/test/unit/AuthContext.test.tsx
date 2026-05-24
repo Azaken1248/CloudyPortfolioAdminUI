@@ -23,7 +23,6 @@ describe('AuthContext', () => {
     vi.clearAllMocks()
     originalFetch = globalThis.fetch
     
-    // Mock window.location
     originalLocation = window.location
     delete (window as any).location;
     (window as any).location = { ...originalLocation, href: '' } as any
@@ -110,11 +109,11 @@ describe('AuthContext', () => {
       .mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve({ success: true, data: { username: 'TestUser' } }),
-      }) // initial me
+      })
       .mockResolvedValueOnce({
         ok: true,
         json: () => Promise.resolve({ success: true }),
-      }) // logout
+      })
 
     render(
       <AuthProvider>

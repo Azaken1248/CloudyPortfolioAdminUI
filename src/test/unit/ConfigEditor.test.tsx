@@ -7,7 +7,6 @@ import userEvent from '@testing-library/user-event'
 
 const mockPublishSection = vi.fn()
 
-// Mock usePublish hook
 vi.mock('../../hooks/usePublish', () => ({
   usePublish: () => ({
     publishSection: mockPublishSection,
@@ -39,7 +38,6 @@ describe('ConfigEditor', () => {
     await user.clear(siteNameInput)
     await user.type(siteNameInput, 'New Site Branding')
 
-    // Check Zustand store
     const draft = useDraftStore.getState().draftState!
     expect(draft.siteConfig.siteName).toBe('New Site Branding')
   })
@@ -48,16 +46,13 @@ describe('ConfigEditor', () => {
     const user = userEvent.setup()
     render(<ConfigEditor />)
 
-    // Initial state: no modified badges
     expect(screen.queryByText('modified')).not.toBeInTheDocument()
 
     const siteNameInput = screen.getByLabelText(/Site Name/i)
     await user.clear(siteNameInput)
     await user.type(siteNameInput, 'Different Name')
 
-    // Wait for the badge to appear
     await waitFor(() => {
-      // The badge might say "modified"
       const badges = screen.queryAllByText('modified')
       expect(badges.length).toBeGreaterThan(0)
     })
@@ -68,12 +63,10 @@ describe('ConfigEditor', () => {
 
     render(<ConfigEditor />)
 
-    // Make a change
     const siteNameInput = screen.getByLabelText(/Site Name/i)
     await user.clear(siteNameInput)
     await user.type(siteNameInput, 'Trigger Publish')
 
-    // Click publish
     const publishBtn = screen.getByRole('button', { name: /Publish Config Only/i })
     await user.click(publishBtn)
 
