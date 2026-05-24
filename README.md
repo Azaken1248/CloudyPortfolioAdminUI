@@ -1,4 +1,4 @@
-<![CDATA[<div align="center">
+<div align="center">
 
 # Cloudy Admin UI
 
@@ -682,4 +682,4 @@ npm run test:watch
 ## License
 
 This project is private and not licensed for redistribution.
-]]>
+
