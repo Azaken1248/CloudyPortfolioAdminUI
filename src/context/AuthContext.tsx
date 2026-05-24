@@ -30,7 +30,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let cancelled = false
 
-    apiFetch<AuthUser>('/auth/me')
+    apiFetch<AuthUser>('/auth/me', { skipRedirectOn401: true })
       .then((authUser) => {
         if (cancelled) return
         setUser(authUser)

@@ -7,7 +7,6 @@ import {
   ShieldIcon,
   EnvelopeIcon,
   SignOutIcon,
-  CloudIcon,
   GitDiffIcon,
 } from '@phosphor-icons/react'
 import { useAuth } from '../context/AuthContext'
@@ -41,7 +40,7 @@ export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
     <aside className="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-logo">
-          <CloudIcon size={24} weight="fill" />
+          <img src="/favicon.svg" alt="Cloudy" width={24} height={24} style={{ display: 'block' }} />
           <span className="sidebar-logo-text">Cloudy Admin</span>
         </div>
       </div>

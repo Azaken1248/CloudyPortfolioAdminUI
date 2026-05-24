@@ -26,21 +26,24 @@ type ApiEnvelope<T> = {
 
 export async function apiFetch<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit & { skipRedirectOn401?: boolean } = {}
 ): Promise<T> {
+  const { skipRedirectOn401 = false, ...fetchOptions } = options
   const url = `${API_BASE}${endpoint}`
 
   const res = await fetch(url, {
-    ...options,
+    ...fetchOptions,
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      ...getAuthHeaders(options.headers),
+      ...getAuthHeaders(fetchOptions.headers),
     },
   })
 
   if (res.status === 401 || res.status === 403) {
-    redirectToLogin()
+    if (!skipRedirectOn401) {
+      redirectToLogin()
+    }
     throw new Error('Unauthorized')
   }
 

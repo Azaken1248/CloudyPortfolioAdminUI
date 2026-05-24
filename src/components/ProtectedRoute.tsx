@@ -5,7 +5,9 @@ import { useAuth } from '../context/AuthContext'
 function LoadingScreen() {
   return (
     <div className="loading-screen">
-      <div className="loading-spinner" />
+      <div className="loading-brand">
+        <img src="/favicon.svg" alt="Loading..." width={48} height={48} />
+      </div>
       <p className="loading-text">Authenticating...</p>
     </div>
   )
