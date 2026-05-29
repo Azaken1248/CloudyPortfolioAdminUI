@@ -86,6 +86,15 @@ graph TB
         G["Public Portfolio Site"]
     end
 
+    subgraph "Cloudy Message Relay Server"
+        H["Message Relay API<br/>Node.js + Express (Port 5001)"]
+    end
+
+    subgraph "External Notification Services"
+        I["Discord API<br/>(Bot DM & Channel)"]
+        J["SMTP Mail Server<br/>(Gmail SMTP Relay)"]
+    end
+
     A -- "/api/* rewrites" --> C
     A -- "iframe src" --> B
     B -- "fetch + inject script" --> G
@@ -94,6 +103,10 @@ graph TB
     A -- "OAuth redirect" --> F
     F -- "token callback" --> A
     G -- "fetch /api/portfolio" --> C
+    
+    G -- "POST /api/messages" --> H
+    H -- "Discord Bot Client" --> I
+    H -- "Nodemailer SMTP Client" --> J
 ```
 
 **Key design decisions:**
