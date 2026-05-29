@@ -115,8 +115,8 @@ function normalizePortfolioData(data: Partial<ApiPortfolioData>): ApiPortfolioDa
 export const useDraftStore = create<DraftStore>()(
   devtools(
     (set, get) => ({
-      liveState: structuredClone(DEFAULT_PORTFOLIO),
-      draftState: structuredClone(DEFAULT_PORTFOLIO),
+      liveState: null,
+      draftState: null,
       pendingUploads: new Map(),
       isLiveLoading: false,
       liveError: null,
