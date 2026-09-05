@@ -124,6 +124,12 @@ export const DEFAULT_PORTFOLIO: ApiPortfolioData = {
     { id: 'faq', label: 'FAQ & TOS', icon: 'ChatCircleText' },
     { id: 'contact', label: 'Contact', icon: 'Envelope' },
   ],
+  navLinks: [
+    { label: 'Instagram', url: 'https://instagram.com/', icon: 'InstagramLogo' },
+    { label: 'TikTok', url: 'https://tiktok.com/', icon: 'TiktokLogo' },
+    { label: 'Discord', url: 'https://discord.gg/', icon: 'DiscordLogo' },
+  ],
+
   socials: [
     {
       platform: 'instagram',

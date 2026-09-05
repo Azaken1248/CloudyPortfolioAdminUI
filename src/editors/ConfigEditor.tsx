@@ -21,6 +21,12 @@ import './ConfigEditor.css'
  * The target is now chosen explicitly and the label is free text.
  * `commissions` is remapped to `commission` by the portfolio's adapter.
  */
+/**
+ * Header links share a fixed row with the logo and the contact button, so the
+ * list is capped. Mirrors MAX_NAV_LINKS in the API schema, which rejects more.
+ */
+const MAX_NAV_LINKS = 5
+
 const NAV_TARGETS = [
   { value: 'home', label: 'Hero / Home' },
   { value: 'gallery', label: 'Gallery' },
@@ -45,6 +51,7 @@ export function ConfigEditor() {
   const [tagline, setTagline] = useState('')
   const [navItems, setNavItems] = useState<Keyed<{ id: string; label: string; icon: string }>[]>([])
   const [socials, setSocials] = useState<Keyed<{ platform: string; url: string; label: string; icon: string }>[]>([])
+  const [navLinks, setNavLinks] = useState<Keyed<{ label: string; url: string; icon: string }>[]>([])
 
   // Re-hydrate when the store replaces the draft (after publish or discard),
   // not just on first mount — otherwise these fields keep pre-publish values
@@ -63,6 +70,7 @@ export function ConfigEditor() {
     setTagline(draftState.footerContent.tagline)
     setNavItems(withKeys(draftState.nav))
     setSocials(withKeys(draftState.socials))
+    setNavLinks(withKeys(draftState.navLinks ?? []))
   }, [draftState, draftRevision])
 
   const skipPushRef = useRef(true)
@@ -79,9 +87,10 @@ export function ConfigEditor() {
       footerContent: { copyright, tagline },
       nav: stripKeys(navItems),
       socials: stripKeys(socials),
+      navLinks: stripKeys(navLinks),
     })
     
-  }, [updateDraftConfig, siteName, siteSubtitle, pageTitle, metaDescription, logoIcon, copyright, tagline, navItems, socials])
+  }, [updateDraftConfig, siteName, siteSubtitle, pageTitle, metaDescription, logoIcon, copyright, tagline, navItems, socials, navLinks])
 
   const updateNav = (i: number, field: string, value: string) => {
     const copy = [...navItems]
@@ -93,6 +102,12 @@ export function ConfigEditor() {
   const duplicateTargets = navItems
     .map((n) => n.id)
     .filter((id, i, all) => id && all.indexOf(id) !== i)
+
+  const updateNavLink = (i: number, field: string, value: string) => {
+    const copy = [...navLinks]
+    copy[i] = { ...copy[i], [field]: value }
+    setNavLinks(copy)
+  }
 
   const updateSocial = (i: number, field: string, value: string) => {
     const copy = [...socials]
@@ -166,6 +181,70 @@ export function ConfigEditor() {
         <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setNavItems([...navItems, { id: 'home', label: '', icon: '', _key: nextRowKey() }])}>
           Add Nav Item
         </ActionButton>
+      </EditorCard>
+
+      <EditorCard
+        title={`Header Links (${navLinks.length}/${MAX_NAV_LINKS})`}
+        description="Shown in the header beside the Send message button. Icon only, so keep labels short — the label is the tooltip and the screen-reader name."
+      >
+        <div className="item-card-list">
+          {navLinks.map((item, i) => (
+            <div key={item._key} className={`item-card ${diff.field(`navLinks.${i}`, stripKey(item)) ? `item-card-${diff.field(`navLinks.${i}`, stripKey(item))}` : ''}`}>
+              <div className="item-card-header">
+                <span className="item-card-number">{i + 1}</span>
+                <span className="item-card-label">{item.label || 'Untitled'}</span>
+                {diff.field(`navLinks.${i}`, stripKey(item)) && (
+                  <span className={`diff-badge diff-badge-${diff.field(`navLinks.${i}`, stripKey(item))}`}>
+                    {diff.field(`navLinks.${i}`, stripKey(item))}
+                  </span>
+                )}
+                <button
+                  className="item-card-remove"
+                  onClick={() => setNavLinks(navLinks.filter((_, j) => j !== i))}
+                  type="button"
+                  title="Remove"
+                >
+                  <TrashIcon size={14} />
+                </button>
+              </div>
+              <div className="item-card-body">
+                <div className="field-grid-2">
+                  <TextInput
+                    label="Label"
+                    value={item.label}
+                    onChange={(v) => updateNavLink(i, 'label', v)}
+                    placeholder="e.g. Instagram"
+                    required
+                  />
+                  <IconPicker label="Icon" value={item.icon} onChange={(v) => updateNavLink(i, 'icon', v)} />
+                </div>
+                <TextInput
+                  label="URL"
+                  value={item.url}
+                  onChange={(v) => updateNavLink(i, 'url', v)}
+                  placeholder="https://…"
+                  type="url"
+                  required
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {navLinks.length < MAX_NAV_LINKS ? (
+          <ActionButton
+            variant="ghost"
+            size="sm"
+            icon={<PlusIcon size={14} />}
+            onClick={() => setNavLinks([...navLinks, { label: '', url: '', icon: 'LinkSimple', _key: nextRowKey() }])}
+          >
+            Add Header Link
+          </ActionButton>
+        ) : (
+          <p className="form-field-helper">
+            Maximum of {MAX_NAV_LINKS} header links reached — remove one to add another.
+          </p>
+        )}
       </EditorCard>
 
       <EditorCard title="Social Links" description="Platform links shown in the footer">

@@ -70,6 +70,13 @@ export type ApiNavItem = {
   icon: string
 }
 
+/** Quick-access link in the site header, beside the contact call to action. */
+export type ApiNavLink = {
+  label: string
+  url: string
+  icon: string
+}
+
 export type ApiSocialLink = {
   platform: string
   url: string
@@ -105,6 +112,7 @@ export type ApiGlobalConfig = {
   }
   nav: ApiNavItem[]
   socials: ApiSocialLink[]
+  navLinks: ApiNavLink[]
 }
 
 export type ApiArtwork = {

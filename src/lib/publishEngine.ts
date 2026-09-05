@@ -98,6 +98,7 @@ export const PUBLISHED_CONFIG_KEYS: (keyof ApiGlobalConfig)[] = [
   'footerContent',
   'nav',
   'socials',
+  'navLinks',
 ]
 
 function diffConfig(
