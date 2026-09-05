@@ -35,6 +35,10 @@ export async function apiFetch<T>(
   const res = await fetch(url, {
     ...fetchOptions,
     credentials: 'include',
+    // This is an editing tool: it must read what is actually stored, never a
+    // cached copy. Reading live state through a cache made a publish look like
+    // it had done nothing.
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       ...fetchOptions.headers,
