@@ -41,15 +41,20 @@ describe('usePreviewBridge', () => {
   it('TC-033: sends CLOUDY_PREVIEW_UPDATE upon receiving CLOUDY_PREVIEW_READY', () => {
     renderHook(() => usePreviewBridge(iframeRef))
     
+    // The bridge now ignores messages that did not originate from the preview
+    // frame at this origin, so the event has to carry a matching origin and
+    // source rather than being a bare synthetic dispatch.
     const messageEvent = new MessageEvent('message', {
-      data: { type: 'CLOUDY_PREVIEW_READY' }
+      data: { type: 'CLOUDY_PREVIEW_READY' },
+      origin: window.location.origin,
+      source: contentWindow as unknown as Window,
     })
     window.dispatchEvent(messageEvent)
     
     expect(contentWindow.postMessage).toHaveBeenCalledWith({
       type: 'CLOUDY_PREVIEW_UPDATE',
       payload: expect.any(Object)
-    }, '*')
+    }, window.location.origin)
   })
 
   it('TC-034: debounces aggressive draft updates (120ms)', () => {
@@ -71,8 +76,13 @@ describe('usePreviewBridge', () => {
   it('TC-036: handles deep object serialization via postMessage', () => {
     renderHook(() => usePreviewBridge(iframeRef))
     
+    // The bridge now ignores messages that did not originate from the preview
+    // frame at this origin, so the event has to carry a matching origin and
+    // source rather than being a bare synthetic dispatch.
     const messageEvent = new MessageEvent('message', {
-      data: { type: 'CLOUDY_PREVIEW_READY' }
+      data: { type: 'CLOUDY_PREVIEW_READY' },
+      origin: window.location.origin,
+      source: contentWindow as unknown as Window,
     })
     window.dispatchEvent(messageEvent)
     

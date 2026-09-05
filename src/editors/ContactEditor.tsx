@@ -4,9 +4,12 @@ import { EditorCard } from '../components/EditorCard'
 import { TextInput, TextAreaInput, SelectInput } from '../components/FormField'
 import { ActionButton } from '../components/ActionButton'
 import { IconPicker } from '../components/IconPicker'
-import { useDraftStore, selectDraftState } from '../store/useDraftStore'
+import { useDraftStore, selectDraftState ,
+  selectDraftRevision,
+} from '../store/useDraftStore'
 import { usePublish } from '../hooks/usePublish'
 import type { ApiFormField } from '../types/api'
+import { withKeys, stripKeys, nextRowKey, type Keyed } from '../lib/rowKeys'
 import '../editors/ConfigEditor.css'
 
 export function ContactEditor() {
@@ -21,15 +24,19 @@ export function ContactEditor() {
   const [infoTitle, setInfoTitle] = useState('')
   const [infoDescription, setInfoDescription] = useState('')
   const [infoNotes, setInfoNotes] = useState<string[]>([])
-  const [formFields, setFormFields] = useState<ApiFormField[]>([])
+  const [formFields, setFormFields] = useState<Keyed<ApiFormField>[]>([])
   const [submitLabel, setSubmitLabel] = useState('')
   const [submitIcon, setSubmitIcon] = useState('')
   const [disclaimer, setDisclaimer] = useState('')
 
-  const hydratedRef = useRef(false)
+  // Re-hydrate when the store replaces the draft (after publish or discard),
+  // not just on first mount — otherwise these fields keep pre-publish values
+  // and the next keystroke writes them back over fresh server data.
+  const draftRevision = useDraftStore(selectDraftRevision)
+  const hydratedRef = useRef(-1)
   useEffect(() => {
-    if (!draftState || hydratedRef.current) return
-    hydratedRef.current = true
+    if (!draftState || hydratedRef.current === draftRevision) return
+    hydratedRef.current = draftRevision
     const c = draftState.contactContent
     setEyebrow(c.section.eyebrow)
     setTitle(c.section.title)
@@ -38,11 +45,11 @@ export function ContactEditor() {
     setInfoTitle(c.infoCard.title)
     setInfoDescription(c.infoCard.description)
     setInfoNotes([...c.infoCard.notes])
-    setFormFields(c.form.fields.map((f) => ({ ...f })))
+    setFormFields(withKeys(c.form.fields))
     setSubmitLabel(c.form.submitLabel)
     setSubmitIcon(c.form.submitIcon ?? '')
     setDisclaimer(c.form.disclaimer)
-  }, [draftState])
+  }, [draftState, draftRevision])
 
   const skipPushRef = useRef(true)
   useEffect(() => {
@@ -50,16 +57,18 @@ export function ContactEditor() {
       skipPushRef.current = false
       return
     }
-    if (!hydratedRef.current) return
+    // hydratedRef holds a revision number, and revision 0 is falsy — compare
+    // explicitly against the unhydrated sentinel.
+    if (hydratedRef.current < 0) return
     updateDraftConfig({
       contactContent: {
         section: { eyebrow, title, description },
         infoCard: { tag: infoTag, title: infoTitle, description: infoDescription, notes: infoNotes },
-        form: { fields: formFields, submitLabel, submitIcon: submitIcon || undefined, disclaimer },
+        form: { fields: stripKeys(formFields), submitLabel, submitIcon: submitIcon || undefined, disclaimer },
       },
     })
 
-  }, [eyebrow, title, description, infoTag, infoTitle, infoDescription, infoNotes, formFields, submitLabel, submitIcon, disclaimer])
+  }, [updateDraftConfig, eyebrow, title, description, infoTag, infoTitle, infoDescription, infoNotes, formFields, submitLabel, submitIcon, disclaimer])
 
   if (isLiveLoading || !draftState) {
     return <div className="editor-loading"><div className="loading-spinner" /></div>
@@ -86,7 +95,9 @@ export function ContactEditor() {
           <label className="form-field-label">Notes</label>
           <div className="points-list">
             {infoNotes.map((note, i) => (
-              <div key={i} className="point-row">
+              // Value+index: a plain index key rebinds the input's DOM node
+              // when a middle row is deleted, moving the caret to the wrong row.
+              <div key={`${i}-${note}`} className="point-row">
                 <input className="form-input" value={note} onChange={(e) => {
                   const copy = [...infoNotes]
                   copy[i] = e.target.value
@@ -107,7 +118,7 @@ export function ContactEditor() {
       <EditorCard title="Form Fields" description="Fields shown in the contact form">
         <div className="item-card-list">
           {formFields.map((field, i) => (
-            <div key={i} className="item-card">
+            <div key={field._key} className="item-card">
               <div className="item-card-header">
                 <span className="item-card-number">{i + 1}</span>
                 <span className="item-card-label">{field.label || 'Untitled Field'}</span>
@@ -146,7 +157,7 @@ export function ContactEditor() {
             </div>
           ))}
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setFormFields([...formFields, { name: '', label: '', type: 'text', placeholder: '' }])}>
+        <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setFormFields([...formFields, { name: '', label: '', type: 'text', placeholder: '', _key: nextRowKey() }])}>
           Add Field
         </ActionButton>
       </EditorCard>
@@ -164,7 +175,7 @@ export function ContactEditor() {
           <span className="draft-pill-dot" />
           Draft — preview only
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('config')}>
+        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('contact')}>
           Publish Contact Only
         </ActionButton>
         <ActionButton variant="primary" icon={<FloppyDiskIcon size={16} />} loading={isPublishing} onClick={publish}>

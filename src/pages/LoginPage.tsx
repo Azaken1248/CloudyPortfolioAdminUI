@@ -1,9 +1,8 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { DiscordLogoIcon } from '@phosphor-icons/react'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../context/authContext'
 import toast from 'react-hot-toast'
-import { AUTH_TOKEN_KEY } from '../config/api'
 import './LoginPage.css'
 
 type Star = {
@@ -313,7 +312,7 @@ function StarField() {
         p.r += 0.35
         p.alpha -= 0.0025
         if (p.alpha <= 0) { pulseRings.splice(i, 1); continue }
-        ctx.strokeStyle = p.color.replace(/[\.\d]+\)$/, `${p.alpha.toFixed(3)})`)
+        ctx.strokeStyle = p.color.replace(/[.\d]+\)$/, `${p.alpha.toFixed(3)})`)
         ctx.lineWidth = 1
         ctx.beginPath()
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
@@ -405,14 +404,6 @@ export function LoginPage() {
   const [searchParams] = useSearchParams()
 
   useEffect(() => {
-    const token = searchParams.get('token')
-    if (token) {
-      window.localStorage.setItem(AUTH_TOKEN_KEY, token)
-      navigate('/admin', { replace: true })
-    }
-  }, [navigate, searchParams])
-
-  useEffect(() => {
     if (isAuthenticated) {
       navigate('/admin', { replace: true })
     }
@@ -425,6 +416,12 @@ export function LoginPage() {
       toast.error('Authentication failed', { duration: 4000 })
     } else if (error === 'unauthorized') {
       toast.error('Access denied. Your Discord account is not whitelisted.', {
+        duration: 5000,
+      })
+    } else if (error === 'invalid_state') {
+      // The OAuth state cookie was missing, stale, or did not match — usually a
+      // login started in another tab or left sitting past its 10-minute window.
+      toast.error('Login session expired or invalid. Please try signing in again.', {
         duration: 5000,
       })
     } else if (error === 'discord_error') {

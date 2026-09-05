@@ -66,7 +66,7 @@ describe('ContactEditor', () => {
     expect(lastField.label).toBe('Phone Number')
   })
 
-  it('TC-055: triggers publishSection("contactContent") on publish', async () => {
+  it('TC-055: triggers publishSection("contact") on publish', async () => {
     const user = userEvent.setup()
     render(<ContactEditor />)
 
@@ -76,6 +76,6 @@ describe('ContactEditor', () => {
     const publishBtn = screen.getByRole('button', { name: /Publish Contact Only/i })
     await user.click(publishBtn)
 
-    expect(mockPublishSection).toHaveBeenCalledWith('config')
+    expect(mockPublishSection).toHaveBeenCalledWith('contact')
   })
 })

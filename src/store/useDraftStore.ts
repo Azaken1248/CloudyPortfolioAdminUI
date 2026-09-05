@@ -24,10 +24,22 @@ type DraftStore = {
 
   isLiveLoading: boolean
   liveError: Error | null
+  /**
+   * False when liveState is the local baseline rather than data actually
+   * fetched from the API. Publishing while false would diff the draft against
+   * content the server has never confirmed, so it is blocked.
+   */
+  isLiveAuthoritative: boolean
   isPublishing: boolean
   publishProgress: { current: number; total: number; label: string } | null
 
   previewKey: number
+  /**
+   * Bumped whenever draftState is replaced from outside an editor — after a
+   * publish, or on discard. Editors hydrate local form state once per revision,
+   * so they pick up server data instead of silently keeping stale values.
+   */
+  draftRevision: number
 
   fetchLiveState: () => Promise<void>
   initDraftFromLive: () => void
@@ -65,6 +77,7 @@ type DraftStore = {
   refreshPreview: () => void
 
   isDirty: () => boolean
+  canPublish: () => boolean
   getFullDraftForPreview: () => ApiPortfolioData | null
 }
 
@@ -112,6 +125,16 @@ function normalizePortfolioData(data: Partial<ApiPortfolioData>): ApiPortfolioDa
   return mergeWithDefaults(structuredClone(DEFAULT_PORTFOLIO), data)
 }
 
+/**
+ * Memo for isDirty. Holds references only — the objects it points at are
+ * replaced on every edit, so nothing is retained beyond the current pair.
+ */
+let dirtyCache: {
+  live: ApiPortfolioData | null
+  draft: ApiPortfolioData | null
+  result: boolean
+} = { live: null, draft: null, result: false }
+
 export const useDraftStore = create<DraftStore>()(
   devtools(
     (set, get) => ({
@@ -120,9 +143,11 @@ export const useDraftStore = create<DraftStore>()(
       pendingUploads: new Map(),
       isLiveLoading: false,
       liveError: null,
+      isLiveAuthoritative: false,
       isPublishing: false,
       publishProgress: null,
       previewKey: 0,
+      draftRevision: 0,
 
       fetchLiveState: async () => {
         const previousLive = get().liveState
@@ -137,9 +162,12 @@ export const useDraftStore = create<DraftStore>()(
           const data = normalizePortfolioData(
             await apiFetch<Partial<ApiPortfolioData>>('/portfolio')
           )
-          set({ liveState: data, liveError: null })
+          set({ liveState: data, liveError: null, isLiveAuthoritative: true })
           if (shouldSyncDraft) {
-            set({ draftState: structuredClone(data) })
+            set((state) => ({
+              draftState: structuredClone(data),
+              draftRevision: state.draftRevision + 1,
+            }))
           }
         } catch (err) {
           console.warn('[DraftStore] API refresh failed, using local baseline:', err)
@@ -147,9 +175,15 @@ export const useDraftStore = create<DraftStore>()(
           set({
             liveState: fallback,
             liveError: err instanceof Error ? err : new Error(String(err)),
+            // The baseline carries real ObjectIds but reflects no known server
+            // state; diffing against it could delete records never touched here.
+            isLiveAuthoritative: false,
           })
           if (shouldSyncDraft) {
-            set({ draftState: structuredClone(DEFAULT_PORTFOLIO) })
+            set((state) => ({
+              draftState: structuredClone(DEFAULT_PORTFOLIO),
+              draftRevision: state.draftRevision + 1,
+            }))
           }
         } finally {
           set({ isLiveLoading: false })
@@ -159,7 +193,10 @@ export const useDraftStore = create<DraftStore>()(
       initDraftFromLive: () => {
         const live = get().liveState
         if (live) {
-          set({ draftState: structuredClone(live) })
+          set((state) => ({
+            draftState: structuredClone(live),
+            draftRevision: state.draftRevision + 1,
+          }))
         }
       },
 
@@ -169,10 +206,11 @@ export const useDraftStore = create<DraftStore>()(
         for (const [localUrl] of pending) {
           URL.revokeObjectURL(localUrl)
         }
-        set({
+        set((state) => ({
           draftState: live ? structuredClone(live) : null,
           pendingUploads: new Map(),
-        })
+          draftRevision: state.draftRevision + 1,
+        }))
       },
 
       updateDraftConfig: (patch) => {
@@ -277,10 +315,35 @@ export const useDraftStore = create<DraftStore>()(
         set((state) => ({ previewKey: state.previewKey + 1 }))
       },
 
+      canPublish: () => {
+        const { isLiveAuthoritative, isPublishing, liveState, draftState } = get()
+        return isLiveAuthoritative && !isPublishing && !!liveState && !!draftState
+      },
+
+      /**
+       * Dirty check, memoised on object identity.
+       *
+       * This serialises the entire portfolio twice, and images are held as
+       * base64 data URLs in the draft, so a single 5 MB upload makes each call
+       * stringify ~13 MB. `Sidebar` calls it from inside a Zustand selector,
+       * which re-runs on every store change — i.e. on every keystroke.
+       *
+       * Both states are replaced immutably, so reference equality is a sound
+       * cache key: if neither object identity changed, the answer cannot have.
+       */
       isDirty: () => {
         const { liveState, draftState } = get()
         if (!liveState || !draftState) return false
-        return JSON.stringify(liveState) !== JSON.stringify(draftState)
+        if (liveState === draftState) return false
+
+        const cache = dirtyCache
+        if (cache.live === liveState && cache.draft === draftState) {
+          return cache.result
+        }
+
+        const result = JSON.stringify(liveState) !== JSON.stringify(draftState)
+        dirtyCache = { live: liveState, draft: draftState, result }
+        return result
       },
 
       getFullDraftForPreview: () => {
@@ -296,6 +359,9 @@ export const selectDraftState = (s: DraftStore) => s.draftState
 export const selectIsPublishing = (s: DraftStore) => s.isPublishing
 export const selectPublishProgress = (s: DraftStore) => s.publishProgress
 export const selectPreviewKey = (s: DraftStore) => s.previewKey
+export const selectLiveError = (s: DraftStore) => s.liveError
+export const selectIsLiveAuthoritative = (s: DraftStore) => s.isLiveAuthoritative
+export const selectDraftRevision = (s: DraftStore) => s.draftRevision
 
 const EMPTY_ARTWORKS: ApiArtwork[] = []
 const EMPTY_TIERS: ApiCommissionTier[] = []

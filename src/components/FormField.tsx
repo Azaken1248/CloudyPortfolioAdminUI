@@ -73,6 +73,10 @@ export function TextInput({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         disabled={disabled}
+        // The label rendered an asterisk but nothing enforced it, so a blank
+        // required field reached the API and came back as a raw Mongoose error.
+        required={required}
+        aria-required={required || undefined}
       />
     </FormField>
   )
@@ -115,6 +119,8 @@ export function TextAreaInput({
         placeholder={placeholder}
         rows={rows}
         disabled={disabled}
+        required={required}
+        aria-required={required || undefined}
       />
     </FormField>
   )

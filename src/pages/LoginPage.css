@@ -38,68 +38,6 @@
   0% { opacity: 0.6; }
   100% { opacity: 1; }
 }
-.cloud-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  overflow: hidden;
-}
-.floating-cloud {
-  position: absolute;
-  color: rgba(91, 96, 120, 0.08);
-  filter: blur(2px);
-  will-change: transform;
-}
-.cloud-1 {
-  top: 12%;
-  left: -8%;
-  animation: cloudDrift1 45s linear infinite;
-}
-.cloud-2 {
-  top: 55%;
-  left: -12%;
-  color: rgba(138, 173, 244, 0.05);
-  animation: cloudDrift2 60s linear infinite;
-  animation-delay: -20s;
-}
-.cloud-3 {
-  top: 25%;
-  right: -6%;
-  animation: cloudDrift3 50s linear infinite;
-  animation-delay: -10s;
-}
-.cloud-4 {
-  bottom: 18%;
-  left: -10%;
-  color: rgba(245, 194, 231, 0.05);
-  animation: cloudDrift1 55s linear infinite;
-  animation-delay: -30s;
-}
-.cloud-5 {
-  top: 70%;
-  right: -8%;
-  animation: cloudDrift3 40s linear infinite;
-  animation-delay: -5s;
-}
-@keyframes cloudDrift1 {
-  0%   { transform: translateX(-10%) translateY(0); }
-  50%  { transform: translateX(110vw) translateY(-20px); }
-  50.01% { transform: translateX(-10%) translateY(10px); }
-  100% { transform: translateX(-10%) translateY(0); }
-}
-@keyframes cloudDrift2 {
-  0%   { transform: translateX(-10%) translateY(0) scale(1.1); }
-  50%  { transform: translateX(110vw) translateY(15px) scale(1.1); }
-  50.01% { transform: translateX(-10%) translateY(-10px) scale(1.1); }
-  100% { transform: translateX(-10%) translateY(0) scale(1.1); }
-}
-@keyframes cloudDrift3 {
-  0%   { transform: translateX(110vw) translateY(0); }
-  50%  { transform: translateX(-10%) translateY(10px); }
-  50.01% { transform: translateX(110vw) translateY(-15px); }
-  100% { transform: translateX(110vw) translateY(0); }
-}
 .login-card {
   background: rgba(36, 39, 58, 0.55);
   backdrop-filter: blur(24px) saturate(1.2);
@@ -303,11 +241,7 @@
     padding: 12px 20px;
     font-size: 0.9rem;
   }
-  .floating-cloud {
-    filter: blur(3px);
-    opacity: 0.6;
   }
-}
 @media (max-height: 600px) {
   .login-card {
     padding: 24px 24px 20px;

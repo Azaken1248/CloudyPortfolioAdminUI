@@ -2,14 +2,13 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { render, screen, waitFor, fireEvent } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { LoginPage } from '../../pages/LoginPage'
-import { AUTH_TOKEN_KEY } from '../../config/api'
 
 const { useAuthMock, toastErrorMock } = vi.hoisted(() => ({
   useAuthMock: vi.fn(),
   toastErrorMock: vi.fn(),
 }))
 
-vi.mock('../../context/AuthContext', () => ({
+vi.mock('../../context/authContext', () => ({
   useAuth: () => useAuthMock(),
 }))
 
@@ -59,12 +58,14 @@ describe('LoginPage', () => {
     )
   }
 
-  it('TC-001: renders the StarField and CloudLayer login backdrop', () => {
+  // The cloud layer was removed from the JSX in an earlier refactor; this
+  // asserted markup that had not rendered since. Now covers the backdrop the
+  // page actually draws.
+  it('TC-001: renders the StarField login backdrop', () => {
     const { container } = renderLogin()
 
     expect(container.querySelector('.star-canvas')).toBeInTheDocument()
-    expect(container.querySelector('.cloud-layer')).toBeInTheDocument()
-    expect(container.querySelectorAll('.floating-cloud')).toHaveLength(5)
+    expect(container.querySelector('.cloud-layer')).not.toBeInTheDocument()
   })
 
   it('TC-002: redirects to the Discord OAuth URL when the login button is clicked', () => {
@@ -83,14 +84,17 @@ describe('LoginPage', () => {
     })
   })
 
-  it('TC-004: stores the JWT token from the callback URL and routes to the admin area', async () => {
+  it('TC-004: ignores a ?token= query parameter — sessions are cookie-only', async () => {
     renderLogin('/login?token=test-jwt-token')
 
     await waitFor(() => {
-      expect(screen.getByText('Admin page')).toBeInTheDocument()
+      expect(screen.getByText(/sign in/i)).toBeInTheDocument()
     })
 
-    expect(window.localStorage.getItem(AUTH_TOKEN_KEY)).toBe('test-jwt-token')
+    // The API never returns a token in the URL; honouring one would put a JWT
+    // into browser history and XSS-readable storage.
+    expect(window.localStorage.getItem('cloudy_admin_token')).toBeNull()
+    expect(window.localStorage.length).toBe(0)
   })
 
   it('TC-010: keeps the login layout intact on a narrow mobile viewport', () => {

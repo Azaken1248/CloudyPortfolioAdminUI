@@ -2,7 +2,8 @@ import { useState, useRef, useEffect, useCallback, useLayoutEffect } from 'react
 import { createPortal } from 'react-dom'
 import * as Icons from '@phosphor-icons/react'
 import type { Icon as PhosphorIcon } from '@phosphor-icons/react'
-import { apiUpload } from '../config/api'
+import toast from 'react-hot-toast'
+import { handleDraftImage } from '../lib/draftImageHandler'
 import './IconPicker.css'
 
 const ICON_LIST: { name: string; component: PhosphorIcon }[] = [
@@ -66,8 +67,14 @@ type IconPickerProps = {
   diff?: 'modified' | 'added' | 'removed' | undefined
 }
 
+/** True for anything renderable as an <img src>, including pending draft uploads. */
 function isUrl(v: string) {
-  return v.startsWith('http://') || v.startsWith('https://') || v.startsWith('blob:')
+  return (
+    v.startsWith('http://') ||
+    v.startsWith('https://') ||
+    v.startsWith('data:image/') ||
+    v.startsWith('blob:')
+  )
 }
 
 export function IconPicker({ label, value, onChange, helper, diff }: IconPickerProps) {
@@ -144,13 +151,28 @@ export function IconPicker({ label, value, onChange, helper, diff }: IconPickerP
   )
 
   const handleUpload = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      toast.error('That file is not an image.')
+      return
+    }
+
     setUploading(true)
     try {
-      const url = await apiUpload(file)
-      onChange(url)
+      // Goes through the draft pipeline like every other image, so the upload
+      // happens on publish and can be discarded. This previously called
+      // apiUpload directly, pushing to the CDN immediately — outside the draft
+      // model, and not undoable even if the change was never published.
+      const draftUrl = await handleDraftImage(file)
+      onChange(draftUrl)
       setOpen(false)
-    } catch {
-      
+    } catch (err) {
+      // The empty catch here meant a failed upload produced no feedback at all.
+      console.error('Icon upload failed:', err)
+      toast.error(
+        err instanceof Error && err.name === 'DraftImageTooLargeError'
+          ? err.message
+          : 'Could not read that image. Please try another file.',
+      )
     } finally {
       setUploading(false)
     }
@@ -283,7 +305,7 @@ export function IconPicker({ label, value, onChange, helper, diff }: IconPickerP
                 )}
               </button>
               <p className="icon-picker-upload-hint">
-                SVG, PNG or WebP recommended. Image will be uploaded to CDN.
+                SVG, PNG or WebP recommended. Uploaded to the CDN when you publish.
               </p>
             </div>
           )}

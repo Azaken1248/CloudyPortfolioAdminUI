@@ -81,7 +81,7 @@ describe('FaqEditor', () => {
     expect(draft.faqItems.length).toBe(initialCount - 1)
   })
 
-  it('TC-059: triggers publishSection("faqItems") on publish', async () => {
+  it('TC-059: triggers publishSection("faq") on publish', async () => {
     const user = userEvent.setup()
     render(<FaqEditor />)
 
@@ -98,6 +98,6 @@ describe('FaqEditor', () => {
     const publishBtn = screen.getByRole('button', { name: /Publish FAQ Only/i })
     await user.click(publishBtn)
 
-    expect(mockPublishSection).toHaveBeenCalledWith('faqItems')
+    expect(mockPublishSection).toHaveBeenCalledWith('faq')
   })
 })

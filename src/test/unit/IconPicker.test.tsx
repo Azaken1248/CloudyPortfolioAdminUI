@@ -2,6 +2,12 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { IconPicker } from '../../components/IconPicker'
 import { useDraftStore } from '../../store/useDraftStore'
+import toast from 'react-hot-toast'
+
+const { toastMock } = vi.hoisted(() => ({
+  toastMock: { error: vi.fn(), success: vi.fn() },
+}))
+vi.mock('react-hot-toast', () => ({ default: toastMock, __esModule: true }))
 
 vi.mock('@phosphor-icons/react', async (importOriginal) => {
   const actual = await importOriginal()
@@ -48,7 +54,7 @@ describe('IconPicker', () => {
     expect(screen.queryByTitle('Heart')).not.toBeInTheDocument()
   })
 
-  it('TC-072: "Upload" tab accepts images and triggers upload via apiUpload', async () => {
+  it('TC-072: "Upload" tab stages the image in the draft rather than uploading immediately', async () => {
     const onChangeMock = vi.fn()
     render(<IconPicker value="Star" label="Test" onChange={onChangeMock} />)
     fireEvent.click(screen.getByText('Star'))
@@ -61,13 +67,15 @@ describe('IconPicker', () => {
     const file = new File(['test'], 'test.png', { type: 'image/png' })
     fireEvent.change(fileInput, { target: { files: [file] } })
     
+    // Icons now go through the draft pipeline like every other image: the CDN
+    // upload happens on publish, so an unpublished change can be discarded.
     await waitFor(() => {
-      expect(apiUpload).toHaveBeenCalledWith(file)
-      expect(onChangeMock).toHaveBeenCalledWith('https://cdn.example.com/test.png')
+      expect(onChangeMock).toHaveBeenCalledWith(expect.stringMatching(/^data:image\//))
     })
+    expect(apiUpload).not.toHaveBeenCalled()
   })
 
-  it('TC-073: uploading a file larger than 5MB triggers an error toast (if implemented)', async () => {
+  it('TC-073: rejects a file larger than 5MB with an error and no change', async () => {
     const onChangeMock = vi.fn()
     render(<IconPicker value="Star" label="Test" onChange={onChangeMock} />)
     fireEvent.click(screen.getByText('Star'))
@@ -80,7 +88,8 @@ describe('IconPicker', () => {
     fireEvent.change(fileInput, { target: { files: [largeFile] } })
     
     await waitFor(() => {
-      expect(apiUpload).toHaveBeenCalledWith(largeFile)
+      expect(toast.error).toHaveBeenCalledWith(expect.stringContaining('the limit is 5 MB'))
     })
+    expect(onChangeMock).not.toHaveBeenCalled()
   })
 })

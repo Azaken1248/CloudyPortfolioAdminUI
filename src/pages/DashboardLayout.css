@@ -177,3 +177,37 @@
     display: flex;
   }
 }
+
+/* Shown when liveState is the local baseline rather than fetched data. */
+.live-state-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  background: rgba(238, 153, 160, 0.14);
+  border-bottom: 1px solid rgba(238, 153, 160, 0.35);
+  color: #ee99a0;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.live-state-banner strong {
+  color: #f5a97f;
+}
+
+.live-state-banner-retry {
+  margin-left: auto;
+  padding: 4px 12px;
+  border: 1px solid rgba(238, 153, 160, 0.5);
+  border-radius: 8px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.live-state-banner-retry:hover {
+  background: rgba(238, 153, 160, 0.18);
+}

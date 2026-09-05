@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest'
 import { render, screen, waitFor, act } from '@testing-library/react'
-import { AuthProvider, useAuth } from '../../context/AuthContext'
-import { AUTH_TOKEN_KEY } from '../../config/api'
+import { AuthProvider } from '../../context/AuthContext'
+import { useAuth } from '../../context/authContext'
 
 const TestComponent = () => {
   const { user, logout, isLoading, isAuthenticated } = useAuth()
@@ -55,8 +55,7 @@ describe('AuthContext', () => {
     expect(screen.getByTestId('auth').textContent).toBe('Yes')
   })
 
-  it('TC-004: sends a stored JWT token when checking the current auth session', async () => {
-    window.localStorage.setItem(AUTH_TOKEN_KEY, 'jwt-test-token')
+  it('TC-004: checks the session with credentials and no Authorization header', async () => {
 
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
@@ -73,14 +72,13 @@ describe('AuthContext', () => {
       expect(screen.queryByTestId('loading')).not.toBeInTheDocument()
     })
 
+    // Auth rides on the httpOnly cookie; there is no client-held token.
     expect(globalThis.fetch).toHaveBeenCalledWith(
       '/api/auth/me',
-      expect.objectContaining({
-        headers: expect.objectContaining({
-          Authorization: 'Bearer jwt-test-token',
-        }),
-      })
+      expect.objectContaining({ credentials: 'include' })
     )
+    const init = (globalThis.fetch as unknown as { mock: { calls: [string, RequestInit][] } }).mock.calls[0][1]
+    expect(JSON.stringify(init.headers ?? {})).not.toMatch(/authorization/i)
   })
 
   it('TC-006: automatically sets unauthenticated if /api/auth/me fails', async () => {
@@ -103,7 +101,6 @@ describe('AuthContext', () => {
   })
 
   it('TC-008: logout hits /api/auth/logout and redirects to /login', async () => {
-    window.localStorage.setItem(AUTH_TOKEN_KEY, 'jwt-test-token')
 
     globalThis.fetch = vi.fn()
       .mockResolvedValueOnce({
@@ -132,7 +129,6 @@ describe('AuthContext', () => {
     await waitFor(() => {
       expect(globalThis.fetch).toHaveBeenCalledWith('/api/auth/logout', expect.any(Object))
       expect(window.location.href).toBe('/login')
-      expect(window.localStorage.getItem(AUTH_TOKEN_KEY)).toBeNull()
     })
   })
 })

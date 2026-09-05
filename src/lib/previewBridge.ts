@@ -1,6 +1,25 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { useDraftStore } from '../store/useDraftStore'
 
+/**
+ * The preview iframe is served from this app's own origin (via /api/preview in
+ * production, or the local preview proxy in development), so draft data is
+ * addressed to that origin explicitly rather than broadcast with '*'.
+ *
+ * '*' would deliver the entire unpublished draft to whatever document happens
+ * to occupy the frame — including after a navigation the app did not initiate.
+ */
+const PREVIEW_TARGET_ORIGIN = window.location.origin
+
+/** Ignore messages that did not come from our own preview frame. */
+function isTrustedPreviewMessage(
+  event: MessageEvent,
+  iframe: HTMLIFrameElement | null,
+): boolean {
+  if (event.origin !== PREVIEW_TARGET_ORIGIN) return false
+  return iframe?.contentWindow != null && event.source === iframe.contentWindow
+}
+
 export function usePreviewBridge(
   iframeRef: React.RefObject<HTMLIFrameElement | null>
 ) {
@@ -22,7 +41,7 @@ export function usePreviewBridge(
 
     iframe.contentWindow.postMessage(
       { type: 'CLOUDY_PREVIEW_UPDATE', payload: draft },
-      '*'
+      PREVIEW_TARGET_ORIGIN
     )
   }, [iframeRef])
 
@@ -54,7 +73,7 @@ export function usePreviewBridge(
         if (iframe?.contentWindow) {
           iframe.contentWindow.postMessage(
             { type: 'CLOUDY_PREVIEW_CLEAR' },
-            '*'
+            PREVIEW_TARGET_ORIGIN
           )
         }
       }
@@ -65,6 +84,10 @@ export function usePreviewBridge(
 
   useEffect(() => {
     const handler = (e: MessageEvent) => {
+      // Without this check any window holding a reference to this one could
+      // trigger a draft send by posting a READY message.
+      if (!isTrustedPreviewMessage(e, iframeRef.current)) return
+
       if (e.data?.type === 'CLOUDY_PREVIEW_READY') {
         lastHashRef.current = ''
         sendDraftToIframe()
@@ -72,7 +95,7 @@ export function usePreviewBridge(
     }
     window.addEventListener('message', handler)
     return () => window.removeEventListener('message', handler)
-  }, [sendDraftToIframe])
+  }, [sendDraftToIframe, iframeRef])
 
   const handleIframeLoad = useCallback(() => {
     sentRef.current = false

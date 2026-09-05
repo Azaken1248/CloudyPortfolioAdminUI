@@ -42,7 +42,7 @@ describe('HeroEditor', () => {
     expect(draft.heroContent.ctaButtons.length).toBe(initialButtonsCount + 1)
   })
 
-  it('TC-043: triggers publishSection("heroContent") when published', async () => {
+  it('TC-043: triggers publishSection("hero") when published', async () => {
     const user = userEvent.setup()
     render(<HeroEditor />)
 
@@ -53,6 +53,6 @@ describe('HeroEditor', () => {
     const publishBtn = screen.getByRole('button', { name: /Publish Hero Only/i })
     await user.click(publishBtn)
 
-    expect(mockPublishSection).toHaveBeenCalledWith('config')
+    expect(mockPublishSection).toHaveBeenCalledWith('hero')
   })
 })

@@ -651,6 +651,23 @@ The Admin UI communicates with the backend through the following endpoints. All 
 
 ---
 
+
+### Development targets
+
+The dev server points at a **local** API by default, so `npm run dev` cannot
+quietly read and write production data. Copy `.env.example` to `.env.local` to
+change them:
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `VITE_API_TARGET` | `http://localhost:5055` | Origin the `/api` dev proxy forwards to |
+| `VITE_PORTFOLIO_ORIGIN` | `http://localhost:5202` | Site loaded into the live-preview iframe |
+
+Setting `VITE_API_TARGET` to the deployed API prints a red warning banner at
+startup: edits made in that mode change the live site immediately.
+
+Run the local stack with `../../dev-env.sh start` from the repository root.
+
 ## Testing
 
 The project includes 21 unit test files covering stores, hooks, components, and pages.

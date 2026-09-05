@@ -10,6 +10,7 @@ import {
   selectDraftState,
   selectDraftCommissionTiers,
   generateDraftId,
+  selectDraftRevision,
 } from '../store/useDraftStore'
 import { usePublish } from '../hooks/usePublish'
 import type { ApiCommissionTier } from '../types/api'
@@ -49,22 +50,34 @@ export function CommissionEditor() {
   const [showForm, setShowForm] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
-  const hydratedRef = useRef(false)
+  // Re-hydrate when the store replaces the draft (after publish or discard),
+  // not just on first mount — otherwise these fields keep pre-publish values
+  // and the next keystroke writes them back over fresh server data.
+  const draftRevision = useDraftStore(selectDraftRevision)
+  const hydratedRef = useRef(-1)
+  // Copying store state into local form fields is the point of this effect: it
+  // runs once per draft revision, not on every render, so it cannot cascade.
+  // The alternative — remounting the editor on a key — would discard scroll
+  // position and any open dropdown on every publish.
   useEffect(() => {
-    if (!draftState || hydratedRef.current) return
-    hydratedRef.current = true
+    if (!draftState || hydratedRef.current === draftRevision) return
+    hydratedRef.current = draftRevision
     const c = draftState.commissions
     setEyebrow(c.section.eyebrow)
     setTitle(c.section.title)
     setDescription(c.section.description)
-    if (c.featured) {
-      setFeaturedTag(c.featured.tag)
-      setFeaturedBadge(c.featured.badge)
-      setFeaturedTitle(c.featured.title)
-      setFeaturedDesc(c.featured.description)
-      setFeaturedHighlights([...c.featured.highlights])
-    }
-  }, [draftState])
+
+    // Hydrate the featured fields unconditionally. Guarding on `c.featured`
+    // left the previous portfolio's values in place when the new one had no
+    // featured commission. Whether to publish `featured` is decided on the way
+    // out, from whether these fields hold anything.
+    const featured = c.featured
+    setFeaturedTag(featured?.tag ?? '')
+    setFeaturedBadge(featured?.badge ?? '')
+    setFeaturedTitle(featured?.title ?? '')
+    setFeaturedDesc(featured?.description ?? '')
+    setFeaturedHighlights(featured?.highlights ? [...featured.highlights] : [])
+  }, [draftState, draftRevision])
 
   const skipPushRef = useRef(true)
   useEffect(() => {
@@ -72,15 +85,35 @@ export function CommissionEditor() {
       skipPushRef.current = false
       return
     }
-    if (!hydratedRef.current) return
+    // hydratedRef holds a revision number, and revision 0 is falsy — compare
+    // explicitly against the unhydrated sentinel.
+    if (hydratedRef.current < 0) return
+    // Only emit `featured` when it actually holds content. Writing it
+    // unconditionally meant opening this editor on a portfolio that had no
+    // featured commission, touching any field, and publishing an empty
+    // featured card to the live site.
+    const featured = {
+      tag: featuredTag,
+      badge: featuredBadge,
+      title: featuredTitle,
+      description: featuredDesc,
+      highlights: featuredHighlights.filter((h) => h.trim()),
+    }
+    const hasFeatured =
+      featured.tag.trim() !== '' ||
+      featured.badge.trim() !== '' ||
+      featured.title.trim() !== '' ||
+      featured.description.trim() !== '' ||
+      featured.highlights.length > 0
+
     updateDraftConfig({
       commissions: {
         section: { eyebrow, title, description },
-        featured: { tag: featuredTag, badge: featuredBadge, title: featuredTitle, description: featuredDesc, highlights: featuredHighlights },
+        ...(hasFeatured ? { featured } : {}),
       },
     })
     
-  }, [eyebrow, title, description, featuredTag, featuredBadge, featuredTitle, featuredDesc, featuredHighlights])
+  }, [updateDraftConfig, eyebrow, title, description, featuredTag, featuredBadge, featuredTitle, featuredDesc, featuredHighlights])
 
   const handleSaveTier = () => {
     if (editingId) {
@@ -145,7 +178,9 @@ export function CommissionEditor() {
           <label className="form-field-label">Highlights</label>
           <div className="points-list">
             {featuredHighlights.map((h, i) => (
-              <div key={i} className="point-row">
+              // Value+index: a plain index key rebinds the input's DOM node
+              // when a middle row is deleted, moving the caret to the wrong row.
+              <div key={`${i}-${h}`} className="point-row">
                 <input className="form-input" value={h} onChange={(e) => {
                   const copy = [...featuredHighlights]
                   copy[i] = e.target.value
@@ -168,7 +203,10 @@ export function CommissionEditor() {
           items={items.map((t) => ({ ...t, id: t._id }))}
           onReorder={handleReorder}
           renderItem={(item) => {
-            const tier = items.find((t) => t._id === item.id)!
+            const tier = items.find((t) => t._id === item.id)
+            // A non-null assertion here would crash the whole editor if the
+            // lists ever desynced; skip the row instead.
+            if (!tier) return null
             return (
               <div className="list-item-header">
                 <div style={{ minWidth: 0 }}>
@@ -212,7 +250,7 @@ export function CommissionEditor() {
           <span className="draft-pill-dot" />
           Draft — preview only
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('commissionTiers')}>
+        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('commissions')}>
           Publish Commissions Only
         </ActionButton>
         <ActionButton variant="primary" icon={<FloppyDiskIcon size={16} />} loading={isPublishing} onClick={publish}>

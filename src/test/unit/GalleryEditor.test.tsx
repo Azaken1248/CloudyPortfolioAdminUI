@@ -79,7 +79,7 @@ describe('GalleryEditor', () => {
     expect(draft.artworks.length).toBe(initialCount - 1)
   })
 
-  it('TC-047: triggers publishSection("artworks") on publish', async () => {
+  it('TC-047: triggers publishSection("gallery") on publish', async () => {
     const user = userEvent.setup()
     render(<GalleryEditor />)
 
@@ -96,6 +96,6 @@ describe('GalleryEditor', () => {
     const publishBtn = screen.getByRole('button', { name: /Publish Gallery Only/i })
     await user.click(publishBtn)
 
-    expect(mockPublishSection).toHaveBeenCalledWith('artworks')
+    expect(mockPublishSection).toHaveBeenCalledWith('gallery')
   })
 })

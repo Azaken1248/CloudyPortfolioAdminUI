@@ -1,104 +1,58 @@
+import { injectPreviewBridge } from '../preview-bridge-script.js'
+
 const PORTFOLIO_ORIGIN = 'https://cloudy.azaken.com'
 const PORTFOLIO_API = 'https://cloudyadminapi.azaken.com/api/portfolio'
-
-const PREVIEW_SCRIPT = `<script>
-(function(){
-  var API='${PORTFOLIO_API}';
-  var _fetch=window.fetch;
-  var draftData=null;
-  var lastHash='';
-  var pendingResolvers=[];
-
-  window.$RefreshReg$=window.$RefreshReg$||function(){};
-  window.$RefreshSig$=window.$RefreshSig$||function(){return function(t){return t}};
-
-  function makeDraftResponse(data){
-    return new Response(
-      JSON.stringify({success:true,data:data}),
-      {status:200,headers:{'Content-Type':'application/json'}}
-    );
-  }
-
-  window.fetch=function(input,init){
-    var u=typeof input==='string'?input:(input instanceof Request?input.url:'');
-    if(u.indexOf(API)!==-1 && (!init || !init.method || init.method==='GET')){
-      if(draftData){
-        return Promise.resolve(makeDraftResponse(draftData));
-      }
-      return new Promise(function(resolve){
-        pendingResolvers.push(resolve);
-      });
-    }
-    return _fetch.apply(this,arguments);
-  };
-
-  function flushPending(){
-    while(pendingResolvers.length){
-      var resolve=pendingResolvers.shift();
-      resolve(makeDraftResponse(draftData));
-    }
-  }
-
-  function signalReady(){
-    if(window.parent && window.parent!==window){
-      window.parent.postMessage({type:'CLOUDY_PREVIEW_READY'},'*');
-    }
-  }
-
-  var readyAttempts=0;
-  var readyInterval=setInterval(function(){
-    if(draftData||readyAttempts>20){clearInterval(readyInterval);return;}
-    readyAttempts++;
-    signalReady();
-  },500);
-  signalReady();
-
-  window.addEventListener('message',function(e){
-    if(!e.data||typeof e.data!=='object')return;
-
-    if(e.data.type==='CLOUDY_PREVIEW_CLEAR'){
-      draftData=null;lastHash='';pendingResolvers=[];
-      window.location.reload();
-      return;
-    }
-
-    if(e.data.type!=='CLOUDY_PREVIEW_UPDATE')return;
-    var payload=e.data.payload;
-    if(!payload||typeof payload!=='object')return;
-
-    var newHash=JSON.stringify(payload);
-    if(newHash===lastHash)return;
-    lastHash=newHash;
-
-    var isFirstData=!draftData;
-    draftData=payload;
-    clearInterval(readyInterval);
-
-    if(isFirstData){
-      flushPending();
-    } else {
-      window.location.reload();
-    }
-  });
-
-})();
-</script>`
 
 export default async function handler(req, res) {
   const path = req.url.replace(/^\/api\/preview/, '') || '/'
 
+  // Resolve rather than concatenate, then confirm the result stayed on the
+  // portfolio origin — string concatenation onto an origin can be re-pointed by
+  // certain request targets.
+  let target
   try {
-    const resp = await fetch(`${PORTFOLIO_ORIGIN}${path}`)
+    target = new URL(path, PORTFOLIO_ORIGIN)
+  } catch {
+    res.status(400).send('Bad request target')
+    return
+  }
+
+  if (target.origin !== new URL(PORTFOLIO_ORIGIN).origin) {
+    res.status(403).send('Refusing to proxy outside the configured portfolio origin')
+    return
+  }
+
+  try {
+    const resp = await fetch(target)
     const ct = resp.headers.get('content-type') || 'application/octet-stream'
 
     if (ct.includes('text/html')) {
-      let html = await resp.text()
-      html = html.replace(
-        '<head>',
-        `<head><base href="${PORTFOLIO_ORIGIN}/" />` + PREVIEW_SCRIPT
-      )
+      const html = injectPreviewBridge(await resp.text(), PORTFOLIO_ORIGIN, PORTFOLIO_API)
       res.setHeader('Content-Type', 'text/html; charset=utf-8')
       res.setHeader('Cache-Control', 'no-store')
+      // This response puts the portfolio's own HTML on the ADMIN origin, so any
+      // XSS in the portfolio would otherwise run with access to the admin API
+      // through the same-origin /api proxy. The CSP below cannot make that
+      // impossible while the frame stays same-origin (the injected bridge needs
+      // it), but it removes the useful exfiltration paths: script may only come
+      // from the portfolio origin, network access is limited to the portfolio
+      // and this origin, and form submission and plugins are blocked outright.
+      res.setHeader(
+        'Content-Security-Policy',
+        [
+          "default-src 'self' " + PORTFOLIO_ORIGIN,
+          "script-src 'unsafe-inline' " + PORTFOLIO_ORIGIN,
+          "style-src 'unsafe-inline' 'self' " + PORTFOLIO_ORIGIN + ' https://fonts.googleapis.com',
+          "font-src 'self' data: " + PORTFOLIO_ORIGIN + ' https://fonts.gstatic.com',
+          "img-src 'self' data: blob: https:",
+          "connect-src 'self' " + PORTFOLIO_ORIGIN,
+          "form-action 'none'",
+          "object-src 'none'",
+          "base-uri " + PORTFOLIO_ORIGIN,
+          "frame-ancestors 'self'",
+        ].join('; '),
+      )
+      res.setHeader('X-Content-Type-Options', 'nosniff')
       res.status(200).send(html)
     } else {
       const buf = Buffer.from(await resp.arrayBuffer())

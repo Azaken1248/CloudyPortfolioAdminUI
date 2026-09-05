@@ -18,7 +18,10 @@ describe('publishEngine', () => {
     expect(plan.ops[0].type).toBe('upload')
   })
 
-  it('TC-084: sequences deletes before creates', () => {
+  // Ordering reversed deliberately: with no transaction across these REST
+  // calls, a mid-plan failure must not have already destroyed records whose
+  // replacements were never created. Non-destructive work goes first.
+  it('TC-084: sequences deletes after creates', () => {
     const live = structuredClone(DEFAULT_PORTFOLIO)
     const draft = structuredClone(DEFAULT_PORTFOLIO)
     
@@ -38,7 +41,7 @@ describe('publishEngine', () => {
     
     expect(deleteIdx).not.toBe(-1)
     expect(createIdx).not.toBe(-1)
-    expect(deleteIdx).toBeLessThan(createIdx)
+    expect(deleteIdx).toBeGreaterThan(createIdx)
   })
 
   it('TC-085: correctly builds nested patch for config', () => {

@@ -1,5 +1,6 @@
 import { useCallback, useRef, useState } from 'react'
 import { CloudArrowUpIcon, ImageIcon, TrashIcon } from '@phosphor-icons/react'
+import toast from 'react-hot-toast'
 import { handleDraftImage } from '../lib/draftImageHandler'
 import './ImageUploader.css'
 
@@ -17,7 +18,11 @@ export function ImageUploader({ value, onChange, label }: ImageUploaderProps) {
 
   const handleFile = useCallback(
     async (file: File) => {
-      if (!file.type.startsWith('image/')) return
+      if (!file.type.startsWith('image/')) {
+        // Previously returned silently, so dropping a PDF looked like nothing happened.
+        toast.error('That file is not an image.')
+        return
+      }
 
       setProcessing(true)
       setProgress(30)
@@ -29,6 +34,11 @@ export function ImageUploader({ value, onChange, label }: ImageUploaderProps) {
         onChange(dataUrl)
       } catch (err) {
         console.error('Image processing failed:', err)
+        toast.error(
+        err instanceof Error && err.name === 'DraftImageTooLargeError'
+          ? err.message
+          : 'Could not read that image. Please try another file.',
+      )
       } finally {
         setTimeout(() => {
           setProcessing(false)

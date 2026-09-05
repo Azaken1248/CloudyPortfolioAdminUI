@@ -6,7 +6,7 @@ import { DEFAULT_PORTFOLIO } from '../../data/defaultPortfolio'
 
 const logoutMock = vi.fn()
 
-vi.mock('../../context/AuthContext', () => ({
+vi.mock('../../context/authContext', () => ({
   useAuth: () => ({
     user: {
       discordId: '1234567890',

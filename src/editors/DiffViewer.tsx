@@ -11,8 +11,10 @@ import {
 } from '@phosphor-icons/react'
 import { ActionButton } from '../components/ActionButton'
 import { useDraftStore } from '../store/useDraftStore'
-import { usePublish } from '../hooks/usePublish'
+import { usePublish, type PublishSection } from '../hooks/usePublish'
 import type { CollectionKey } from '../store/useDraftStore'
+import type { ApiPortfolioData } from '../types/api'
+import { PUBLISHED_CONFIG_KEYS } from '../lib/publishEngine'
 import './DiffViewer.css'
 
 type ConfigChange = {
@@ -60,13 +62,17 @@ function friendlyLabel(path: string): string {
     'gallerySection.eyebrow': 'Gallery Eyebrow',
     'gallerySection.title': 'Gallery Title',
     'gallerySection.description': 'Gallery Description',
-    'commissions.eyebrow': 'Commissions Eyebrow',
-    'commissions.title': 'Commissions Title',
-    'commissions.description': 'Commissions Description',
-    'commissions.statusOpen': 'Commissions Open',
-    'faqPage.eyebrow': 'FAQ Eyebrow',
-    'faqPage.title': 'FAQ Title',
-    'faqPage.description': 'FAQ Description',
+    // These previously named paths that do not exist on the data —
+    // `commissions.eyebrow`, `commissions.statusOpen`, `faqPage.title` — so real
+    // paths fell through to a `split('.').pop()` fallback and rendered as bare
+    // field names. Corrected to the actual schema.
+    'commissions.section': 'Commissions Section',
+    'commissions.featured': 'Featured Commission',
+    'faqPage.section': 'FAQ Section',
+    'faqPage.faqHeading': 'FAQ Heading',
+    'faqPage.tosHeading': 'Terms Heading',
+    'faqPage.tosAcceptanceText': 'Terms Acceptance Text',
+    'contactContent.section': 'Contact Section',
     'contactContent.section.eyebrow': 'Contact Eyebrow',
     'contactContent.section.title': 'Contact Title',
     'contactContent.section.description': 'Contact Description',
@@ -159,21 +165,27 @@ function calculateChanges(
 ): Change[] {
   const changes: Change[] = []
 
-  const CONFIG_PATHS = [
-    'siteConfig.siteName', 'siteConfig.siteSubtitle', 'siteConfig.pageTitle',
-    'siteConfig.metaDescription', 'siteConfig.logoIcon',
-    'heroContent.eyebrow', 'heroContent.headline', 'heroContent.body',
-    'heroContent.accent', 'heroContent.pillIcon', 'heroContent.pillLabel',
-    'heroContent.image', 'heroContent.imageAlt', 'heroContent.statusPillLabel',
-    'heroContent.ctaButtons',
-    'gallerySection.eyebrow', 'gallerySection.title', 'gallerySection.description',
-    'commissions.eyebrow', 'commissions.title', 'commissions.description', 'commissions.statusOpen',
-    'faqPage.eyebrow', 'faqPage.title', 'faqPage.description',
-    'contactContent.section.eyebrow', 'contactContent.section.title', 'contactContent.section.description',
-    'contactContent.infoCard', 'contactContent.form',
-    'footerContent.copyright', 'footerContent.tagline',
-    'nav', 'socials',
-  ]
+  /**
+   * Derived from the same top-level keys the publish engine diffs
+   * (`publishEngine.diffConfig`), then expanded one level for readability.
+   *
+   * A hand-maintained list of leaf paths used to live here and had drifted from
+   * the schema — it named `commissions.statusOpen`, which does not exist, and
+   * omitted the FAQ headings entirely. Anything it missed was published without
+   * ever appearing on this screen. Walking the real objects means the review
+   * cannot silently under-report again.
+   */
+  const CONFIG_PATHS = PUBLISHED_CONFIG_KEYS.flatMap((key) => {
+    const liveVal = live[key]
+    const draftVal = draft[key]
+
+    // Arrays and primitives are compared whole; objects are expanded one level
+    // so a changed field is named rather than shown as a whole-section edit.
+    const source = (draftVal ?? liveVal) as unknown
+    if (!source || typeof source !== 'object' || Array.isArray(source)) return [key]
+
+    return Object.keys(source as Record<string, unknown>).map((child) => `${key}.${child}`)
+  })
 
   for (const path of CONFIG_PATHS) {
     const liveVal = getNestedValue(live, path)
@@ -248,6 +260,28 @@ function calculateChanges(
   return changes
 }
 
+
+/**
+ * The Changes screen groups by raw data key; publishSection now takes a named
+ * section. Map between them so a per-group Publish button ships exactly that
+ * group and nothing else.
+ */
+const GROUP_TO_SECTION: Record<string, PublishSection> = {
+  siteConfig: 'config',
+  footerContent: 'config',
+  nav: 'config',
+  socials: 'config',
+  heroContent: 'hero',
+  contactContent: 'contact',
+  gallerySection: 'gallery',
+  artworks: 'gallery',
+  commissions: 'commissions',
+  commissionTiers: 'commissions',
+  faqPage: 'faq',
+  faqItems: 'faq',
+  tosSections: 'tos',
+}
+
 export function DiffViewer() {
   const liveState = useDraftStore((s) => s.liveState)
   const draftState = useDraftStore((s) => s.draftState)
@@ -303,7 +337,10 @@ export function DiffViewer() {
     } else if (change.action === 'modified' && change.liveItem) {
       const list = ((draftState as unknown as Record<string, unknown>)[change.collection] as { _id: string }[])
         .map((item) => (item._id === change.id ? change.liveItem : item))
-      updateDraftSection(change.collection, list as any)
+      updateDraftSection(
+        change.collection,
+        list as ApiPortfolioData[typeof change.collection],
+      )
     }
   }
 
@@ -359,7 +396,7 @@ export function DiffViewer() {
                   size="sm"
                   icon={<CloudArrowUpIcon size={12} />}
                   loading={isPublishing}
-                  onClick={() => publishSection(section as CollectionKey)}
+                  onClick={() => publishSection(GROUP_TO_SECTION[section] ?? 'config')}
                   className="diff-section-publish"
                 >
                   Publish

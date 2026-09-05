@@ -1,16 +1,17 @@
 const API_BASE = '/api'
-export const AUTH_TOKEN_KEY = 'cloudy_admin_token'
 
-function getAuthHeaders(headers: HeadersInit = {}): HeadersInit {
-  const token = window.localStorage.getItem(AUTH_TOKEN_KEY)
-  return {
-    ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    ...headers,
-  }
-}
-
+/**
+ * Authentication is entirely cookie-based: the API sets an httpOnly `token`
+ * cookie and `requireAuth` reads only that. `credentials: 'include'` plus the
+ * same-origin rewrite is what carries the session.
+ *
+ * A parallel localStorage/Bearer path used to live here — it never fired,
+ * because the OAuth callback never returns a token in the URL and the API never
+ * inspects the Authorization header. It was removed rather than left in place:
+ * as written it was a ready-made route to putting a JWT in a URL (leaking via
+ * history, Referer and logs) and into XSS-readable storage.
+ */
 function redirectToLogin() {
-  window.localStorage.clear()
   window.location.href = '/login'
 }
 
@@ -36,7 +37,7 @@ export async function apiFetch<T>(
     credentials: 'include',
     headers: {
       'Content-Type': 'application/json',
-      ...getAuthHeaders(fetchOptions.headers),
+      ...fetchOptions.headers,
     },
   })
 
@@ -63,7 +64,6 @@ export async function apiUpload(file: File): Promise<string> {
   const res = await fetch(`${API_BASE}/upload`, {
     method: 'POST',
     credentials: 'include',
-    headers: getAuthHeaders(),
     body: formData,
   })
 

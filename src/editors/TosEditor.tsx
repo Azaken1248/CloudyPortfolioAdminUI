@@ -177,7 +177,7 @@ export function TosEditor() {
           <span className="draft-pill-dot" />
           Draft — preview only
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('tosSections')}>
+        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('tos')}>
           Publish TOS Only
         </ActionButton>
         <ActionButton variant="primary" icon={<FloppyDiskIcon size={16} />} loading={isPublishing} onClick={publish}>

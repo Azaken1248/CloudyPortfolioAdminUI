@@ -32,7 +32,7 @@ export function PreviewPane() {
   const handleRefresh = useCallback(() => {
     iframeRef.current?.contentWindow?.postMessage(
       { type: 'CLOUDY_PREVIEW_CLEAR' },
-      '*'
+      window.location.origin
     )
   }, [])
 

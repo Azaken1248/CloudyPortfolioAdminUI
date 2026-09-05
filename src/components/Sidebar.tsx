@@ -9,7 +9,8 @@ import {
   SignOutIcon,
   GitDiffIcon,
 } from '@phosphor-icons/react'
-import { useAuth } from '../context/AuthContext'
+import { useMemo } from 'react'
+import { useAuth } from '../context/authContext'
 import { useDraftStore } from '../store/useDraftStore'
 import './Sidebar.css'
 
@@ -30,7 +31,15 @@ type SidebarProps = {
 
 export function Sidebar({ activeTab, onTabChange }: SidebarProps) {
   const { user, logout } = useAuth()
-  const isDirty = useDraftStore((s) => s.isDirty())
+  // Subscribe to the two states rather than calling isDirty() inside the
+  // selector: a selector runs on every store change, so the comparison ran on
+  // every keystroke regardless of whether either state had actually changed.
+  const liveState = useDraftStore((s) => s.liveState)
+  const draftState = useDraftStore((s) => s.draftState)
+  const isDirty = useMemo(
+    () => (liveState && draftState ? useDraftStore.getState().isDirty() : false),
+    [liveState, draftState],
+  )
 
   const avatarUrl = user?.avatar
     ? `https://cdn.discordapp.com/avatars/${user.discordId}/${user.avatar}.png?size=64`

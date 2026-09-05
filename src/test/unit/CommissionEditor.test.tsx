@@ -79,7 +79,7 @@ describe('CommissionsEditor', () => {
     expect(draft.commissionTiers.length).toBe(initialCount - 1)
   })
 
-  it('TC-051: triggers publishSection("commissionTiers") on publish', async () => {
+  it('TC-051: triggers publishSection("commissions") on publish', async () => {
     const user = userEvent.setup()
     render(<CommissionEditor />)
 
@@ -96,6 +96,6 @@ describe('CommissionsEditor', () => {
     const publishBtn = screen.getByRole('button', { name: /Publish Commissions Only/i })
     await user.click(publishBtn)
 
-    expect(mockPublishSection).toHaveBeenCalledWith('commissionTiers')
+    expect(mockPublishSection).toHaveBeenCalledWith('commissions')
   })
 })

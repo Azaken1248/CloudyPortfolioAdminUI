@@ -10,7 +10,7 @@ import { FaqEditor } from '../editors/FaqEditor'
 import { TosEditor } from '../editors/TosEditor'
 import { ContactEditor } from '../editors/ContactEditor'
 import { DiffViewer } from '../editors/DiffViewer'
-import { useDraftStore } from '../store/useDraftStore'
+import { useDraftStore, selectLiveError, selectIsLiveAuthoritative } from '../store/useDraftStore'
 import './DashboardLayout.css'
 
 const EDITORS: Record<string, () => React.JSX.Element> = {
@@ -30,6 +30,9 @@ export function DashboardLayout() {
   const [previewVisible, setPreviewVisible] = useState(false)
 
   const fetchLiveState = useDraftStore((s) => s.fetchLiveState)
+  const liveError = useDraftStore(selectLiveError)
+  const isLiveAuthoritative = useDraftStore(selectIsLiveAuthoritative)
+  const isLiveLoading = useDraftStore((s) => s.isLiveLoading)
 
   useEffect(() => {
     fetchLiveState()
@@ -58,6 +61,22 @@ export function DashboardLayout() {
       </div>
 
       <div className="dashboard-main">
+        {!isLiveAuthoritative && !isLiveLoading && (
+          <div className="live-state-banner" role="alert">
+            <strong>Working from local defaults.</strong>{' '}
+            {liveError
+              ? 'The live site could not be loaded, so what you see may not match production. Publishing is disabled until it loads.'
+              : 'Live site state has not loaded yet.'}
+            <button
+              type="button"
+              className="live-state-banner-retry"
+              onClick={() => fetchLiveState()}
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
         {}
         <div className="mobile-topbar">
           <button

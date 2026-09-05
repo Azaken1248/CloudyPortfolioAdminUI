@@ -1,97 +1,23 @@
 import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import http from 'node:http'
+// @ts-expect-error - plain JS module shared with the Vercel function
+import { injectPreviewBridge } from './preview-bridge-script.js'
 
-const PORTFOLIO_ORIGIN = 'https://cloudy.azaken.com'
-const PORTFOLIO_API = 'https://cloudyadminapi.azaken.com/api/portfolio'
+/**
+ * Development targets. These default to LOCAL services so `npm run dev` cannot
+ * quietly read and write production data; pointing at production is possible,
+ * but has to be asked for explicitly via the environment.
+ *
+ *   VITE_API_TARGET        origin the /api proxy forwards to
+ *   VITE_PORTFOLIO_ORIGIN  site loaded into the preview iframe
+ */
+const API_TARGET = process.env.VITE_API_TARGET || 'http://localhost:5055'
+const PORTFOLIO_ORIGIN = process.env.VITE_PORTFOLIO_ORIGIN || 'http://localhost:5202'
+const PORTFOLIO_API = `${API_TARGET}/api/portfolio`
 const PREVIEW_PORT = 5176
 
-const PREVIEW_SCRIPT = `<script>
-(function(){
-  var API='${PORTFOLIO_API}';
-  var _fetch=window.fetch;
-  var draftData=null;
-  var lastHash='';
-  var pendingResolvers=[];
-
-  window.$RefreshReg$=window.$RefreshReg$||function(){};
-  window.$RefreshSig$=window.$RefreshSig$||function(){return function(t){return t}};
-
-  function makeDraftResponse(data){
-    return new Response(
-      JSON.stringify({success:true,data:data}),
-      {status:200,headers:{'Content-Type':'application/json'}}
-    );
-  }
-
-  window.fetch=function(input,init){
-    var u=typeof input==='string'?input:(input instanceof Request?input.url:'');
-    if(u.indexOf(API)!==-1 && (!init || !init.method || init.method==='GET')){
-      if(draftData){
-        return Promise.resolve(makeDraftResponse(draftData));
-      }
-      
-      return new Promise(function(resolve){
-        pendingResolvers.push(resolve);
-      });
-    }
-    return _fetch.apply(this,arguments);
-  };
-
-  function flushPending(){
-    while(pendingResolvers.length){
-      var resolve=pendingResolvers.shift();
-      resolve(makeDraftResponse(draftData));
-    }
-  }
-
-  function signalReady(){
-    if(window.parent && window.parent!==window){
-      window.parent.postMessage({type:'CLOUDY_PREVIEW_READY'},'*');
-    }
-  }
-
-  var readyAttempts=0;
-  var readyInterval=setInterval(function(){
-    if(draftData||readyAttempts>20){clearInterval(readyInterval);return;}
-    readyAttempts++;
-    signalReady();
-  },500);
-  signalReady();
-
-  window.addEventListener('message',function(e){
-    if(!e.data||typeof e.data!=='object')return;
-
-    if(e.data.type==='CLOUDY_PREVIEW_CLEAR'){
-      draftData=null;lastHash='';pendingResolvers=[];
-      window.location.reload();
-      return;
-    }
-
-    if(e.data.type!=='CLOUDY_PREVIEW_UPDATE')return;
-    var payload=e.data.payload;
-    if(!payload||typeof payload!=='object')return;
-
-    var newHash=JSON.stringify(payload);
-    if(newHash===lastHash)return;
-    lastHash=newHash;
-
-    var isFirstData=!draftData;
-    draftData=payload;
-    clearInterval(readyInterval);
-
-    if(isFirstData){
-      
-      flushPending();
-    } else {
-      
-      window.location.reload();
-    }
-  });
-
-})();
-</script>`
-
+const IS_PRODUCTION_TARGET = /azaken\.com/.test(API_TARGET)
 
 function ogAbsoluteUrlPlugin(): Plugin {
   return {
@@ -119,13 +45,31 @@ function portfolioPreviewPlugin(): Plugin {
     name: 'portfolio-preview-proxy',
     configureServer() {
       const proxy = http.createServer(async (req, res) => {
-        const path = req.url || '/'
+        // req.url is the raw request target and can be anything a client sends,
+        // including forms that would re-point the host when concatenated onto an
+        // origin (a leading '@', an absolute URL). Resolve it against the target
+        // origin and then confirm the result did not escape it.
+        let target: URL
         try {
-          const resp = await fetch(`${PORTFOLIO_ORIGIN}${path}`)
+          target = new URL(req.url || '/', PORTFOLIO_ORIGIN)
+        } catch {
+          res.writeHead(400, { 'Content-Type': 'text/plain' })
+          res.end('Bad request target')
+          return
+        }
+
+        if (target.origin !== new URL(PORTFOLIO_ORIGIN).origin) {
+          res.writeHead(403, { 'Content-Type': 'text/plain' })
+          res.end('Refusing to proxy outside the configured portfolio origin')
+          return
+        }
+
+        try {
+          const resp = await fetch(target)
           const ct = resp.headers.get('content-type') || 'application/octet-stream'
           if (ct.includes('text/html')) {
-            let html = await resp.text()
-            html = html.replace('<head>', '<head>' + PREVIEW_SCRIPT)
+            // Same injector the deployed function uses, so the two cannot drift.
+            const html = injectPreviewBridge(await resp.text(), PORTFOLIO_ORIGIN, PORTFOLIO_API)
             res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' })
             res.end(html)
           } else {
@@ -141,14 +85,25 @@ function portfolioPreviewPlugin(): Plugin {
       proxy.on('error', (e: NodeJS.ErrnoException) => {
         if (e.code === 'EADDRINUSE') {
           console.warn(`[preview] Port ${PREVIEW_PORT} in use, trying ${PREVIEW_PORT + 1}`)
-          proxy.listen(PREVIEW_PORT + 1)
+          proxy.listen(PREVIEW_PORT + 1, '127.0.0.1')
         }
       })
-      proxy.listen(PREVIEW_PORT, () => {
-        console.log(`  ➜  Preview:  http://localhost:${PREVIEW_PORT}/`)
+      // Bound to loopback explicitly: Node listens on all interfaces by
+      // default, which put an unauthenticated proxy on the local network.
+      proxy.listen(PREVIEW_PORT, '127.0.0.1', () => {
+        console.log(`  ➜  Preview:  http://127.0.0.1:${PREVIEW_PORT}/`)
       })
     },
   }
+}
+
+if (IS_PRODUCTION_TARGET) {
+  console.warn(
+    `\n  \x1b[41m\x1b[97m  WARNING  \x1b[0m dev server is proxying /api to PRODUCTION: ${API_TARGET}` +
+    `\n            Edits made here change the live site. Unset VITE_API_TARGET to use the local stack.\n`,
+  )
+} else {
+  console.log(`  \x1b[36m➜  API target:\x1b[0m ${API_TARGET}  \x1b[90m(local)\x1b[0m`)
 }
 
 export default defineConfig({
@@ -157,13 +112,18 @@ export default defineConfig({
     port: 5174,
     proxy: {
       '/api': {
-        target: 'https://cloudyadminapi.azaken.com',
+        target: API_TARGET,
         changeOrigin: true,
         secure: true,
         configure: (proxy) => {
-          proxy.on('proxyReq', (proxyReq) => {
-            proxyReq.removeHeader('origin');
-          });
+          if (IS_PRODUCTION_TARGET) {
+            // Stripping Origin defeats the API's CORS check. Only needed when
+            // deliberately pointed at production; a local API should be
+            // configured to allow this dev origin instead.
+            proxy.on('proxyReq', (proxyReq) => {
+              proxyReq.removeHeader('origin');
+            });
+          }
         },
       },
     },

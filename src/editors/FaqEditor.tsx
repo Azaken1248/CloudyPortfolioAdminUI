@@ -10,6 +10,7 @@ import {
   selectDraftState,
   selectDraftFaqItems,
   generateDraftId,
+  selectDraftRevision,
 } from '../store/useDraftStore'
 import { usePublish } from '../hooks/usePublish'
 import type { ApiFaqItem } from '../types/api'
@@ -41,10 +42,14 @@ export function FaqEditor() {
   const [showForm, setShowForm] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
-  const hydratedRef = useRef(false)
+  // Re-hydrate when the store replaces the draft (after publish or discard),
+  // not just on first mount — otherwise these fields keep pre-publish values
+  // and the next keystroke writes them back over fresh server data.
+  const draftRevision = useDraftStore(selectDraftRevision)
+  const hydratedRef = useRef(-1)
   useEffect(() => {
-    if (!draftState || hydratedRef.current) return
-    hydratedRef.current = true
+    if (!draftState || hydratedRef.current === draftRevision) return
+    hydratedRef.current = draftRevision
     const f = draftState.faqPage
     setEyebrow(f.section.eyebrow)
     setTitle(f.section.title)
@@ -52,7 +57,7 @@ export function FaqEditor() {
     setFaqHeading(f.faqHeading)
     setTosHeading(f.tosHeading)
     setTosAcceptanceText(f.tosAcceptanceText)
-  }, [draftState])
+  }, [draftState, draftRevision])
 
   const skipPushRef = useRef(true)
   useEffect(() => {
@@ -60,7 +65,9 @@ export function FaqEditor() {
       skipPushRef.current = false
       return
     }
-    if (!hydratedRef.current) return
+    // hydratedRef holds a revision number, and revision 0 is falsy — compare
+    // explicitly against the unhydrated sentinel.
+    if (hydratedRef.current < 0) return
     updateDraftConfig({
       faqPage: {
         section: { eyebrow, title, description },
@@ -68,7 +75,7 @@ export function FaqEditor() {
       },
     })
     
-  }, [eyebrow, title, description, faqHeading, tosHeading, tosAcceptanceText])
+  }, [updateDraftConfig, eyebrow, title, description, faqHeading, tosHeading, tosAcceptanceText])
 
   const handleSaveFaq = () => {
     if (editingId) {
@@ -128,7 +135,10 @@ export function FaqEditor() {
           items={items.map((f) => ({ ...f, id: f._id }))}
           onReorder={handleReorder}
           renderItem={(item) => {
-            const faq = items.find((f) => f._id === item.id)!
+            const faq = items.find((f) => f._id === item.id)
+            // A non-null assertion here would crash the whole editor if the
+            // lists ever desynced; skip the row instead.
+            if (!faq) return null
             return (
               <div className="list-item-header">
                 <div style={{ minWidth: 0 }}>
@@ -172,7 +182,7 @@ export function FaqEditor() {
           <span className="draft-pill-dot" />
           Draft — preview only
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('faqItems')}>
+        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('faq')}>
           Publish FAQ Only
         </ActionButton>
         <ActionButton variant="primary" icon={<FloppyDiskIcon size={16} />} loading={isPublishing} onClick={publish}>

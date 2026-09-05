@@ -13,7 +13,7 @@ vi.mock('../../config/api', () => ({
   apiFetch: apiFetchMock,
 }))
 
-vi.mock('../../context/AuthContext', () => ({
+vi.mock('../../context/authContext', () => ({
   useAuth: () => ({
     user: {
       discordId: '1234567890',

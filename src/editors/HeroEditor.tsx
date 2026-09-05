@@ -5,10 +5,13 @@ import { TextInput, TextAreaInput, SelectInput } from '../components/FormField'
 import { ActionButton } from '../components/ActionButton'
 import { ImageUploader } from '../components/ImageUploader'
 import { IconPicker } from '../components/IconPicker'
-import { useDraftStore, selectDraftState } from '../store/useDraftStore'
+import { useDraftStore, selectDraftState ,
+  selectDraftRevision,
+} from '../store/useDraftStore'
 import { usePublish } from '../hooks/usePublish'
 import { useDiff } from '../hooks/useDiff'
 import type { ApiCtaButton } from '../types/api'
+import { withKeys, stripKeys, stripKey, nextRowKey, type Keyed } from '../lib/rowKeys'
 import '../editors/ConfigEditor.css'
 
 export function HeroEditor() {
@@ -27,12 +30,16 @@ export function HeroEditor() {
   const [image, setImage] = useState('')
   const [imageAlt, setImageAlt] = useState('')
   const [statusPillLabel, setStatusPillLabel] = useState('')
-  const [ctaButtons, setCtaButtons] = useState<ApiCtaButton[]>([])
+  const [ctaButtons, setCtaButtons] = useState<Keyed<ApiCtaButton>[]>([])
 
-  const hydratedRef = useRef(false)
+  // Re-hydrate when the store replaces the draft (after publish or discard),
+  // not just on first mount — otherwise these fields keep pre-publish values
+  // and the next keystroke writes them back over fresh server data.
+  const draftRevision = useDraftStore(selectDraftRevision)
+  const hydratedRef = useRef(-1)
   useEffect(() => {
-    if (!draftState || hydratedRef.current) return
-    hydratedRef.current = true
+    if (!draftState || hydratedRef.current === draftRevision) return
+    hydratedRef.current = draftRevision
     const h = draftState.heroContent
     setPillIcon(h.pillIcon)
     setPillLabel(h.pillLabel)
@@ -43,8 +50,8 @@ export function HeroEditor() {
     setImage(h.image)
     setImageAlt(h.imageAlt)
     setStatusPillLabel(h.statusPillLabel)
-    setCtaButtons(h.ctaButtons.map((b) => ({ ...b })))
-  }, [draftState])
+    setCtaButtons(withKeys(h.ctaButtons))
+  }, [draftState, draftRevision])
 
   const skipPushRef = useRef(true)
   useEffect(() => {
@@ -52,14 +59,16 @@ export function HeroEditor() {
       skipPushRef.current = false
       return
     }
-    if (!hydratedRef.current) return
+    // hydratedRef holds a revision number, and revision 0 is falsy — compare
+    // explicitly against the unhydrated sentinel.
+    if (hydratedRef.current < 0) return
     updateDraftConfig({
       heroContent: {
-        pillIcon, pillLabel, eyebrow, headline, body, accent, image, imageAlt, statusPillLabel, ctaButtons,
+        pillIcon, pillLabel, eyebrow, headline, body, accent, image, imageAlt, statusPillLabel, ctaButtons: stripKeys(ctaButtons),
       },
     })
     
-  }, [pillIcon, pillLabel, eyebrow, headline, body, accent, image, imageAlt, statusPillLabel, ctaButtons])
+  }, [updateDraftConfig, pillIcon, pillLabel, eyebrow, headline, body, accent, image, imageAlt, statusPillLabel, ctaButtons])
 
   const updateCta = (i: number, field: string, value: string) => {
     const copy = [...ctaButtons]
@@ -103,9 +112,9 @@ export function HeroEditor() {
       <EditorCard title="CTA Buttons" description="Call-to-action buttons below the hero text">
         <div className="item-card-list">
           {ctaButtons.map((btn, i) => {
-            const btnDiff = diff.field(`heroContent.ctaButtons.${i}`, btn)
+            const btnDiff = diff.field(`heroContent.ctaButtons.${i}`, stripKey(btn))
             return (
-              <div key={i} className={`item-card ${btnDiff ? `item-card-${btnDiff}` : ''}`}>
+              <div key={btn._key} className={`item-card ${btnDiff ? `item-card-${btnDiff}` : ''}`}>
                 <div className="item-card-header">
                   <span className="item-card-number">{i + 1}</span>
                   <span className="item-card-label">{btn.label || 'Untitled Button'}</span>
@@ -136,7 +145,7 @@ export function HeroEditor() {
             )
           })}
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setCtaButtons([...ctaButtons, { label: '', href: '', variant: 'primary' }])}>
+        <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setCtaButtons([...ctaButtons, { label: '', href: '', variant: 'primary', _key: nextRowKey() }])}>
           Add Button
         </ActionButton>
       </EditorCard>
@@ -148,7 +157,7 @@ export function HeroEditor() {
             Unsaved changes
           </div>
         )}
-        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('config')} disabled={!hasDirty}>
+        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('hero')} disabled={!hasDirty}>
           Publish Hero Only
         </ActionButton>
         <ActionButton variant="primary" icon={<FloppyDiskIcon size={16} />} loading={isPublishing} onClick={publish}>

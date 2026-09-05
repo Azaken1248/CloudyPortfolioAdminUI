@@ -1,13 +1,33 @@
 import { useEffect, useRef, useState } from 'react'
 import { GearIcon, FloppyDiskIcon, PlusIcon, TrashIcon, CloudArrowUpIcon } from '@phosphor-icons/react'
 import { EditorCard } from '../components/EditorCard'
-import { TextInput, TextAreaInput } from '../components/FormField'
+import { TextInput, TextAreaInput, SelectInput } from '../components/FormField'
 import { ActionButton } from '../components/ActionButton'
 import { IconPicker } from '../components/IconPicker'
-import { useDraftStore, selectDraftState } from '../store/useDraftStore'
+import { withKeys, stripKeys, stripKey, nextRowKey, type Keyed } from '../lib/rowKeys'
+import { useDraftStore, selectDraftState ,
+  selectDraftRevision,
+} from '../store/useDraftStore'
 import { usePublish } from '../hooks/usePublish'
 import { useDiff } from '../hooks/useDiff'
 import './ConfigEditor.css'
+
+/**
+ * Nav links are in-page anchors, so an item's `id` has to match a section the
+ * portfolio actually renders. It used to be derived from the label — renaming
+ * "Gallery" to "My Art" produced id `my-art`, which matches nothing, and the
+ * link silently stopped working with no indication in the editor.
+ *
+ * The target is now chosen explicitly and the label is free text.
+ * `commissions` is remapped to `commission` by the portfolio's adapter.
+ */
+const NAV_TARGETS = [
+  { value: 'home', label: 'Hero / Home' },
+  { value: 'gallery', label: 'Gallery' },
+  { value: 'commissions', label: 'Commissions' },
+  { value: 'faq', label: 'FAQ & Terms' },
+  { value: 'contact', label: 'Contact' },
+]
 
 export function ConfigEditor() {
   const draftState = useDraftStore(selectDraftState)
@@ -23,13 +43,17 @@ export function ConfigEditor() {
   const [logoIcon, setLogoIcon] = useState('')
   const [copyright, setCopyright] = useState('')
   const [tagline, setTagline] = useState('')
-  const [navItems, setNavItems] = useState<{ id: string; label: string; icon: string }[]>([])
-  const [socials, setSocials] = useState<{ platform: string; url: string; label: string; icon: string }[]>([])
+  const [navItems, setNavItems] = useState<Keyed<{ id: string; label: string; icon: string }>[]>([])
+  const [socials, setSocials] = useState<Keyed<{ platform: string; url: string; label: string; icon: string }>[]>([])
 
-  const hydratedRef = useRef(false)
+  // Re-hydrate when the store replaces the draft (after publish or discard),
+  // not just on first mount — otherwise these fields keep pre-publish values
+  // and the next keystroke writes them back over fresh server data.
+  const draftRevision = useDraftStore(selectDraftRevision)
+  const hydratedRef = useRef(-1)
   useEffect(() => {
-    if (!draftState || hydratedRef.current) return
-    hydratedRef.current = true
+    if (!draftState || hydratedRef.current === draftRevision) return
+    hydratedRef.current = draftRevision
     setSiteName(draftState.siteConfig.siteName)
     setSiteSubtitle(draftState.siteConfig.siteSubtitle)
     setPageTitle(draftState.siteConfig.pageTitle)
@@ -37,9 +61,9 @@ export function ConfigEditor() {
     setLogoIcon(draftState.siteConfig.logoIcon)
     setCopyright(draftState.footerContent.copyright)
     setTagline(draftState.footerContent.tagline)
-    setNavItems(draftState.nav.map((n) => ({ ...n })))
-    setSocials(draftState.socials.map((s) => ({ ...s })))
-  }, [draftState])
+    setNavItems(withKeys(draftState.nav))
+    setSocials(withKeys(draftState.socials))
+  }, [draftState, draftRevision])
 
   const skipPushRef = useRef(true)
   useEffect(() => {
@@ -47,24 +71,28 @@ export function ConfigEditor() {
       skipPushRef.current = false
       return
     }
-    if (!hydratedRef.current) return
+    // hydratedRef holds a revision number, and revision 0 is falsy — compare
+    // explicitly against the unhydrated sentinel.
+    if (hydratedRef.current < 0) return
     updateDraftConfig({
       siteConfig: { siteName, siteSubtitle, pageTitle, metaDescription, logoIcon },
       footerContent: { copyright, tagline },
-      nav: navItems,
-      socials,
+      nav: stripKeys(navItems),
+      socials: stripKeys(socials),
     })
     
-  }, [siteName, siteSubtitle, pageTitle, metaDescription, logoIcon, copyright, tagline, navItems, socials])
+  }, [updateDraftConfig, siteName, siteSubtitle, pageTitle, metaDescription, logoIcon, copyright, tagline, navItems, socials])
 
   const updateNav = (i: number, field: string, value: string) => {
     const copy = [...navItems]
     copy[i] = { ...copy[i], [field]: value }
-    if (field === 'label') {
-      copy[i].id = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-    }
     setNavItems(copy)
   }
+
+  // Two nav items pointing at the same section would render duplicate anchors.
+  const duplicateTargets = navItems
+    .map((n) => n.id)
+    .filter((id, i, all) => id && all.indexOf(id) !== i)
 
   const updateSocial = (i: number, field: string, value: string) => {
     const copy = [...socials]
@@ -106,12 +134,12 @@ export function ConfigEditor() {
       <EditorCard title="Navigation" description="Items shown in the top navigation bar">
         <div className="item-card-list">
           {navItems.map((item, i) => (
-            <div key={i} className={`item-card ${diff.field(`nav.${i}`, item) ? `item-card-${diff.field(`nav.${i}`, item)}` : ''}`}>
+            <div key={item._key} className={`item-card ${diff.field(`nav.${i}`, stripKey(item)) ? `item-card-${diff.field(`nav.${i}`, stripKey(item))}` : ''}`}>
               <div className="item-card-header">
                 <span className="item-card-number">{i + 1}</span>
                 <span className="item-card-label">{item.label || 'Untitled'}</span>
-                {diff.field(`nav.${i}`, item) && (
-                  <span className={`diff-badge diff-badge-${diff.field(`nav.${i}`, item)}`}>{diff.field(`nav.${i}`, item)}</span>
+                {diff.field(`nav.${i}`, stripKey(item)) && (
+                  <span className={`diff-badge diff-badge-${diff.field(`nav.${i}`, stripKey(item))}`}>{diff.field(`nav.${i}`, stripKey(item))}</span>
                 )}
                 <button className="item-card-remove" onClick={() => setNavItems(navItems.filter((_, j) => j !== i))} type="button" title="Remove">
                   <TrashIcon size={14} />
@@ -119,12 +147,23 @@ export function ConfigEditor() {
               </div>
               <div className="item-card-body">
                 <TextInput label="Label" value={item.label} onChange={(v) => updateNav(i, 'label', v)} placeholder="e.g. Home" />
+                <SelectInput
+                  label="Links to"
+                  value={item.id}
+                  onChange={(v) => updateNav(i, 'id', v)}
+                  options={NAV_TARGETS}
+                  helper={
+                    duplicateTargets.includes(item.id)
+                      ? 'Another nav item already links here.'
+                      : undefined
+                  }
+                />
                 <IconPicker label="Icon" value={item.icon} onChange={(v) => updateNav(i, 'icon', v)} />
               </div>
             </div>
           ))}
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setNavItems([...navItems, { id: '', label: '', icon: '' }])}>
+        <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setNavItems([...navItems, { id: 'home', label: '', icon: '', _key: nextRowKey() }])}>
           Add Nav Item
         </ActionButton>
       </EditorCard>
@@ -132,12 +171,12 @@ export function ConfigEditor() {
       <EditorCard title="Social Links" description="Platform links shown in the footer">
         <div className="item-card-list">
           {socials.map((item, i) => (
-            <div key={i} className={`item-card ${diff.field(`socials.${i}`, item) ? `item-card-${diff.field(`socials.${i}`, item)}` : ''}`}>
+            <div key={item._key} className={`item-card ${diff.field(`socials.${i}`, stripKey(item)) ? `item-card-${diff.field(`socials.${i}`, stripKey(item))}` : ''}`}>
               <div className="item-card-header">
                 <span className="item-card-number">{i + 1}</span>
                 <span className="item-card-label">{item.label || 'Untitled'}</span>
-                {diff.field(`socials.${i}`, item) && (
-                  <span className={`diff-badge diff-badge-${diff.field(`socials.${i}`, item)}`}>{diff.field(`socials.${i}`, item)}</span>
+                {diff.field(`socials.${i}`, stripKey(item)) && (
+                  <span className={`diff-badge diff-badge-${diff.field(`socials.${i}`, stripKey(item))}`}>{diff.field(`socials.${i}`, stripKey(item))}</span>
                 )}
                 <button className="item-card-remove" onClick={() => setSocials(socials.filter((_, j) => j !== i))} type="button" title="Remove">
                   <TrashIcon size={14} />
@@ -153,7 +192,7 @@ export function ConfigEditor() {
             </div>
           ))}
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setSocials([...socials, { platform: '', url: '', label: '', icon: '' }])}>
+        <ActionButton variant="ghost" size="sm" icon={<PlusIcon size={14} />} onClick={() => setSocials([...socials, { platform: '', url: '', label: '', icon: '', _key: nextRowKey() }])}>
           Add Social Link
         </ActionButton>
       </EditorCard>

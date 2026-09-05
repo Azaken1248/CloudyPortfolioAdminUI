@@ -11,6 +11,7 @@ import {
   selectDraftState,
   selectDraftArtworks,
   generateDraftId,
+  selectDraftRevision,
 } from '../store/useDraftStore'
 import { usePublish } from '../hooks/usePublish'
 import { useDiff } from '../hooks/useDiff'
@@ -47,14 +48,18 @@ export function GalleryEditor() {
   const [showForm, setShowForm] = useState(false)
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
-  const hydratedRef = useRef(false)
+  // Re-hydrate when the store replaces the draft (after publish or discard),
+  // not just on first mount — otherwise these fields keep pre-publish values
+  // and the next keystroke writes them back over fresh server data.
+  const draftRevision = useDraftStore(selectDraftRevision)
+  const hydratedRef = useRef(-1)
   useEffect(() => {
-    if (!draftState || hydratedRef.current) return
-    hydratedRef.current = true
+    if (!draftState || hydratedRef.current === draftRevision) return
+    hydratedRef.current = draftRevision
     setEyebrow(draftState.gallerySection.eyebrow)
     setTitle(draftState.gallerySection.title)
     setDescription(draftState.gallerySection.description)
-  }, [draftState])
+  }, [draftState, draftRevision])
 
   const skipPushRef = useRef(true)
   useEffect(() => {
@@ -62,12 +67,14 @@ export function GalleryEditor() {
       skipPushRef.current = false
       return
     }
-    if (!hydratedRef.current) return
+    // hydratedRef holds a revision number, and revision 0 is falsy — compare
+    // explicitly against the unhydrated sentinel.
+    if (hydratedRef.current < 0) return
     updateDraftConfig({
       gallerySection: { eyebrow, title, description },
     })
     
-  }, [eyebrow, title, description])
+  }, [updateDraftConfig, eyebrow, title, description])
 
   const handleSaveArtwork = () => {
     if (editingId) {
@@ -145,7 +152,10 @@ export function GalleryEditor() {
           items={items.map((a) => ({ ...a, id: a._id }))}
           onReorder={handleReorder}
           renderItem={(item) => {
-            const artwork = items.find((a) => a._id === item.id)!
+            const artwork = items.find((a) => a._id === item.id)
+            // A non-null assertion here would crash the whole editor if the
+            // lists ever desynced; skip the row instead.
+            if (!artwork) return null
             return (
               <div className="list-item-header">
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
@@ -205,7 +215,7 @@ export function GalleryEditor() {
           <span className="draft-pill-dot" />
           Draft — preview only
         </div>
-        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('artworks')}>
+        <ActionButton variant="ghost" size="sm" icon={<CloudArrowUpIcon size={14} />} loading={isPublishing} onClick={() => publishSection('gallery')}>
           Publish Gallery Only
         </ActionButton>
         <ActionButton variant="primary" icon={<FloppyDiskIcon size={16} />} loading={isPublishing} onClick={publish}>
